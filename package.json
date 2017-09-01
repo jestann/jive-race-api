@@ -1,0 +1,22 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "Web app for a race built on Express, React, and Mongoose",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jestann/not-sad-race.git"
+  },
+  "author": "jestann",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jestann/not-sad-race/issues"
+  },
+  "homepage": "https://github.com/jestann/not-sad-race#readme",
+  "dependencies": {
+    "express": "^4.15.4"
+  }
+}
