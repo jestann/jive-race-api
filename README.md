@@ -1,2 +1,3 @@
-# not-sad-race
-Web app for a race built on Express, React, and Mongoose
+### the not **SAD** race
+
+A web app built on [Express](http://expressjs.com/), [React](https://facebook.github.io/react/), and [Mongoose](http://mongoosejs.com/).

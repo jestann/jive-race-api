@@ -2,8 +2,7 @@ const express = require('express')
 const app = express()
 
 
-// routing
-const baseRouter = require('./baseRouter')
+// Require routes.
 
 app.get('/', function (request, response) {
     response.send('Welcome.')
@@ -13,27 +12,21 @@ app.get('/about', function (request, response) {
     response.send('About.')
 })
 
-app.use('/races', baseRouter)
-app.get('/races/:raceId/teams', function (request, response) { 
-    // authenticate with passport
-    // authorize for data
-    // return either { success, data } or { false, error message }
-    response.send('All teams for race ', request.params['raceId'], '.')
-})
+const raceRouter = require('./raceRouter')
+app.use('/races', raceRouter)
 
-app.use('/teams', baseRouter)
-app.get('/teams/:teamId/users', function (request, response) {
-    response.send('All users for team ', request.params['teamId'], '.')
-})
+const teamRouter = require('./teamRouter')
+app.use('/teams', teamRouter)
 
-app.use('/users', baseRouter)
+const userRouter = require('./userRouter')
+app.use('/users', userRouter)
 
 
-/*
-// mongoose setup
+
+// Set up mongoose.
 
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/test');
+mongoose.connect('mongodb://localhost/test'); // what should this be?
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -42,44 +35,18 @@ db.once('open', function() {
 });
 
 
-// mongoose schema example
 
-const raceSchema = mongoose.Schema({
-    year: String
-})
+// Set up server.
 
-raceSchema.methods.getYear = function () {
-  let message = this.year
-    ? "This race is for the year " + this.year + "."
-    : "No listed year."
-  console.log(message)
-}
-
-const Race = mongoose.model('Race', raceSchema)
-
-
-// test race model instance
-
-let race17 = new Race({year: '2017'})
-
-race17.save(function (error, race17) {
-  if (error) return console.error(error)
-  race17.getYear()
-})
-*/
-
-
-
-// server
-app.listen(3000, function () {
-  console.log('App listening on port 3000.')
+app.listen(process.env.PORT, function () {
+  console.log('App listening on port ', process.env.PORT)
 })
 
 
 
 /*
 
-PROJECT.
+PROJECT NOTES.
 
 1. routes
 2. database schema
