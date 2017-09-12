@@ -1,36 +1,45 @@
-const express = require('express')
-const router = express.Router()
-
+const router = require('express').Router()
 const raceController = require('./../controllers/raceController')
 
-// passport middleware
-
-router.get('/', (req, res) => {
-    res.send(raceController.index())
+router.get('/', async (req, res) => {
+    let data = await raceController.index(req)
+    res.status(data.code).json(data)
 })
 
-router.post('/create', (req, res) => {
-    res.send(raceController.create(/* data */))
+router.post('/create', async (req, res) => {
+    let data = await raceController.create(req)
+    res.status(data.code).json(data)
 })
 
-router.get('/:raceId', (req, res) => {
-    res.send(raceController.show(req.params['raceId']))
+router.route('/:id')
+    .get(async (req, res) => {
+        let data = await raceController.show(req)
+        res.status(data.code).json(data)
+    })
+    
+    .put(async (req, res) => {
+        let data = await raceController.update(req)
+        res.status(data.code).json(data)
+    })
+
+    .delete(async (req, res) => {
+        let data = await raceController.destroy(req)
+        res.status(data.code).json(data)
+    })
+
+router.get('/:id/teams', async (req, res) => {
+    let data = await raceController.teams(req)
+    res.status(data.code).json(data)
 })
 
-router.put('/:raceId', (req, res) => {
-    res.send(raceController.update(req.params['raceId']))
+router.get('/:id/runners', async (req, res) => {
+    let data = await raceController.runners(req)
+    res.status(data.code).json(data)
 })
 
-router.delete('/:raceId', (req, res) => {
-    res.send(raceController.destroy(req.params['raceId']))
-})
-
-router.get('/:raceId/teams', (req, res) => {
-    res.send(raceController.teams(req.params['raceId']))
-})
-
-router.get('/:raceId/users', (req, res) => {
-    res.send(raceController.users(req.params['raceId']))
+router.get('/:id/results', async (req, res) => {
+    let data = await raceController.results(req)
+    res.status(data.code).json(data)
 })
 
 module.exports = router
