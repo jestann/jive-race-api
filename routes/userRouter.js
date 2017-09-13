@@ -52,9 +52,16 @@ router.post('/:id/jointeam', async (req, res) => {
     res.status(data.code).json(data)
 })
 
-router.post('/:id/addresult', async (req, res) => {
-    let data = await userController.addResult(req)
+router.post('/:id/makeadmin', async (req, res) => {
+    let data = await userController.makeAdmin(req)
     res.status(data.code).json(data)
 })
+
+router.post('/:id/makemember', async (req, res) => {
+    let data = await userController.makeMember(req)
+    res.status(data.code).json(data)
+})
+
+// results are added through corresponsing result route
 
 module.exports = router

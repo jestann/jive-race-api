@@ -28,8 +28,9 @@ app.get('/about', function (request, response) {
     response.send('About.')
 })
 
+// retrieve a token
 const authRouter = require('./routes/authRouter')
-app.use('/authorize', authRouter)
+app.use('/authenticate', authRouter)
 
 // authentication middleware
 const authenticator = require('./tools/authenticator')

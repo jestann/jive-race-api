@@ -1,9 +1,9 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
+const User = './user'
 const Race = './race'
 const Team = './team'
-const User = './user'
 
 const resultSchema = new Schema({
     createdAt: Date,
@@ -11,8 +11,7 @@ const resultSchema = new Schema({
     race: Race.schema,
     team: Team.schema,
     runner: User.schema,
-    time: Number,
-    place: Number // auto-calculate this at time of creation?
+    time: Number, // placing will be calculated by race or team
 })
 
 resultSchema.pre('save', function(next) {

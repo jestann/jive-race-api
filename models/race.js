@@ -1,26 +1,26 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
-const Team = './team'
 const User = './user'
+const Team = './team'
 const Result = './result'
 
 const raceSchema = new Schema({
     createdAt: Date,
     updatedAt: Date,
-    year: String,
-    name: String,
+    year: { type: Number, required: true, unique: true },
+    name: { type: String, required: true },
     description: String,
-    date: Date,
+    date: { type: Date, required: true },
     startingLocation: String,
     endingLocation: String,
-    coordinator: String,
+    coordinator: User.schema,
     runners: [User.schema],
     teams: [Team.schema],
     results: [Result.schema] // easy querying of results might require additional fields
 })
 
-
+// can't use arrow functions here
 raceSchema.pre('save', function(next) {
     const currentDate = new Date()
     this.updatedAt = currentDate
@@ -28,6 +28,27 @@ raceSchema.pre('save', function(next) {
         this.createdAt = currentDate
     next()
 })
+
+raceSchema.methods.setCoordinator = function (user) {
+    this.coordinator = user
+}
+
+raceSchema.methods.addRunner = function (user) {
+    this.runners.push(user)
+}
+
+raceSchema.methods.addTeam = function (team) {
+    this.teams.push(team)
+}
+
+raceSchema.methods.addResult = function (result) {
+    this.results.push(result)
+}
+
+raceSchema.methods.rank = function () {
+    /* rank teams */
+    /* rank individuals */
+}
 
 const raceModel = mongoose.model('Race', raceSchema)
 
