@@ -12,6 +12,7 @@ const resultSchema = new Schema({
     team: Team.schema,
     runner: User.schema,
     time: Number, // placing will be calculated by race or team
+    note: String
 })
 
 resultSchema.pre('save', function(next) {

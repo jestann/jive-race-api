@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const Race = './race'
 const Team = './team'
 const Result = './result'
+const Err = './../config/error'
 
 const userSchema = new Schema({
     // _id gives object, .id gives string
@@ -27,7 +28,7 @@ const userSchema = new Schema({
     current: Boolean, // registered for current race ... is this a reserved word?
     dateRegistered: Date,
     teams: [Team.schema],
-    currentTeam: Team.schema,
+    currentTeam: { type: Team.schema, default: null },
     results: [Result.schema]
 })
 
@@ -58,6 +59,11 @@ userSchema.methods.isAdmin = function () {
     return false
 }
 
+userSchema.methods.owns = function (team) {
+    if team.owner.id === this.id { return true }
+    return false
+}
+
 // registers for a specific race
 userSchema.methods.register = function (race) {
     this.races.push(race)
@@ -67,18 +73,31 @@ userSchema.methods.register = function (race) {
     // race.addRunner(this) // also call race.addRunner on this user here? leave that to the controller.
 }
 
+userSchema.methods.leaveTeam = function (team) {
+    if (this.currentTeam) {
+        if (this.owns(this.currentTeam)) {
+            throw { Err.transferOwnership }
+        }
+        
+        // remove team from teams array
+        this.teams = this.teams.filter((team) => team.id !== this.currentTeam.id)
+
+        // remove member from team list
+        this.currentTeam.members = this.currentTeam.members.filter((member) => member.id !== this.id)
+        
+        // empty currentTeam
+        this.currentTeam = null
+    }
+}
+
+// this also removes the  
 userSchema.methods.joinTeam = function (team) {
     if (this.current) {
-        if (this.currentTeam) {
-            if (this.currentTeam.owner = this) {
-                return 'error'
-            }
-            this.teams.remove(this.currentTeam)
-            // this.currentTeam.removeMember(this) // this also needs done
-        }
+        if (this.currentTeam) { this.leaveTeam() } // if already on a team
         this.teams.push(team)
         this.currentTeam = team
-        // team.addMember(this) // also call team.addMember on this user here? leave that to the controller.
+        
+        this.currentTeam.addMember(this) // add to team list
     }
 }
 

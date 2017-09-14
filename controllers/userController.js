@@ -67,18 +67,18 @@ module.exports = new Class UserController {
             if (!authorizer.user.updateSelf(req.user, userInstance)) { throw Err.notAuthorized }
             
             // update attributes -- add validation here -- also add check for required attributes
-            for attribute in req.body.userData {
+            for attribute in req.body {
                 if (authorizor.user.validSelfAttributes.includes(attribute) && attribute !== 'password') { 
-                    userInstance[attribute] = req.body.userData[attribute]
+                    userInstance[attribute] = req.body.[attribute]
                 }
             }
             // handle password separately
-            if (req.body.userData.password) { userInstance.password = await bcrypt.hash(req.body.password, 10) }
+            if (req.body.password) { userInstance.password = await bcrypt.hash(req.body.password, 10) }
 
             // administrative updates if allowed
             if (authorize.user.updateAdmin(req.user, userInstance)) {
-                for attribute in req.body.userData {
-                    if (authorizor.user.validAdminAttributes.includes(attribute)) { userInstance[attribute] = req.body.userData[attribute] }
+                for attribute in req.body {
+                    if (authorizor.user.validAdminAttributes.includes(attribute)) { userInstance[attribute] = req.body[attribute] }
                 }
             }
 

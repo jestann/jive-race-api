@@ -35,6 +35,10 @@ module.exports = new Class TeamController {
             let owner = await User.findById(req.body.owner.id)
             if (!owner) { throw Err.userNotFound }
             
+            // check to see if owner already has another team they own
+            let ownerTeam = owner.currentTeam
+            if (ownerTeam.owner === owner) { throw Err.transferOwnership }
+            
             // create new team
             let newTeam = new Team({
                 name: name,
@@ -42,9 +46,10 @@ module.exports = new Class TeamController {
                 owner: owner
             })
             
-            // update race and owner
+            // add team to race and join owner to team
             race.addTeam(team)
             owner.joinTeam(team)
+            team.addMember(owner)
             
             // add additional attributes
             if (req.body.description) { newTeam.description = req.body.description }
@@ -79,21 +84,21 @@ module.exports = new Class TeamController {
             if (!authorizer.team.update(req.user, team)) { throw Err.notAuthorized }
             
             // update attributes -- add validation here
-            for attribute in req.body.teamData {
+            for attribute in req.body {
                 if (authorizor.team.validAttributes.includes(attribute) && attribute !== 'owner' && attribute !== 'race') {
-                    team[attribute] = req.body.teamData[attribute]
+                    team[attribute] = req.body[attribute]
                 }
             }
             
             // handle race and owner separately
-            if (req.body.teamData.race) {
-                let race = await Race.findById(req.body.teamData.race.id) 
+            if (req.body.race) {
+                let race = await Race.findById(req.body.race.id) 
                 if (!race) { throw Err.raceNotFound }
                 team.race = race
             }
             
-            if (req.body.teamData.owner) {
-                let owner = await User.findById(req.body.teamData.owner.id)
+            if (req.body.owner) {
+                let owner = await User.findById(req.body.owner.id)
                 if (!owner) { throw Err.userNotFound }
                 team.owner = owner
             }

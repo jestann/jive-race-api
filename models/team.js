@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const User = './user'
 const Race = './race'
 const Result = './result'
+const Err = './../config/error'
 
 const teamSchema = new Schema({
     createdAt: Date,
@@ -32,7 +33,8 @@ teamSchema.methods.addMember = function (user) {
 }
 
 teamSchema.methods.removeMember = function (user) {
-    this.members.remove(user) // this is problematic if it's the owner? prompt to transfer?
+    if (this.owner.id === user.id) { throw Err.transferOwnership }
+    this.members = this.members.filter((member) => ( member.id !== user.id ))
 }
 
 teamSchema.methods.addResult = function (result) {
@@ -40,7 +42,7 @@ teamSchema.methods.addResult = function (result) {
 }
 
 teamSchema.methods.transfer = function (user) {
-    this.owner = user
+    this.owner = user // retains previous owner as team member
 }
 
 const teamModel = mongoose.model('Team', teamSchema)

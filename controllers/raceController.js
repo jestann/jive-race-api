@@ -79,15 +79,15 @@ module.exports = new Class RaceController {
             if (!authorizer.race.update(req.user, race)) { throw Err.notAuthorized }
             
             // update attributes -- add validation here
-            for attribute in req.body.raceData {
+            for attribute in req.body {
                 if (authorizor.race.validAttributes.includes(attribute) && attribute !== 'coordinator') {
-                    race[attribute] = req.body.raceData[attribute]
+                    race[attribute] = req.body[attribute]
                 }
             }
             
             // handle coordinator separately
-            if (req.body.raceData.coordinator) {
-                let coordinator = await User.findById(req.body.raceData.coordinator.id) 
+            if (req.body.coordinator) {
+                let coordinator = await User.findById(req.body.coordinator.id) 
                 if (!coordinator) { throw Err.userNotFound }
                 race.coordinator = coordinator
             }
