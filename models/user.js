@@ -24,12 +24,9 @@ const userSchema = new Schema({
     state: String,
     zip: String,
     phone: String,
-    races: [Race.schema],
-    current: Boolean, // registered for current race ... is this a reserved word?
-    dateRegistered: Date,
-    teams: [Team.schema],
-    currentTeam: { type: Team.schema, default: null },
-    results: [Result.schema]
+    currentRace: { type: Race.schema, default: null }, // last race registered // is this a reserved word?
+    dateRegistered: Date, // date last registered
+    currentTeam: { type: Team.schema, default: null } // current team
 })
 
 // can't use arrow functions here because of 'this' syntax
@@ -59,24 +56,30 @@ userSchema.methods.isAdmin = function () {
     return false
 }
 
+// registered for the current race?
+// FIX - what if the last race they registered for isn't current, but one of their races is?
+userSchema.methods.current = function () {
+    return this.currentRace.isCurrent()
+}
+
 userSchema.methods.owns = function (team) {
-    if team.owner.id === this.id { return true }
+    if (team.owner.id === this.id) { return true }
     return false
 }
 
-// registers for a specific race
+// registers for a specific race 
 userSchema.methods.register = function (race) {
-    this.races.push(race)
-    this.current = true
+    this.currentRace = race
     this.dateRegistered = new Date()
     this.currentTeam = null
-    // race.addRunner(this) // also call race.addRunner on this user here? leave that to the controller.
+    race.addRunner(this) // also must add runner to race object
 }
 
+// test if owner first
 userSchema.methods.leaveTeam = function (team) {
     if (this.currentTeam) {
         if (this.owns(this.currentTeam)) {
-            throw { Err.transferOwnership }
+            return { Err.transferOwnership }
         }
         
         // remove team from teams array

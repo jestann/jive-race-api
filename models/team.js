@@ -15,8 +15,7 @@ const teamSchema = new Schema({
     slackChannel: String,
     meetingLocation: String,
     owner: User.schema,
-    members: [User.schema], // this will include the owner
-    results: [Result.schema] // easy querying of results might require additional fields
+    members: [User.schema]
 })
 
 // can't use arrow functions here
@@ -32,13 +31,9 @@ teamSchema.methods.addMember = function (user) {
     this.members.push(user)
 }
 
+// cannot use on owner
 teamSchema.methods.removeMember = function (user) {
-    if (this.owner.id === user.id) { throw Err.transferOwnership }
-    this.members = this.members.filter((member) => ( member.id !== user.id ))
-}
-
-teamSchema.methods.addResult = function (result) {
-    this.results.push(result)
+    this.members = this.members.filter((member) => { member.id !== user.id })
 }
 
 teamSchema.methods.transfer = function (user) {

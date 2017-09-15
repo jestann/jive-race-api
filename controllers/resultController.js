@@ -47,16 +47,8 @@ module.exports = new Class ResultController {
             
             // add additional attributes
             if (req.body.note) { newResult.note = req.body.note }
-            
-            // update race, team, and runner
-            race.addResult(newResult)
-            team.addResult(newResult)
-            runner.addResult(newResult)
 
             // save and return
-            await race.save()
-            await team.save()
-            await runner.save()
             let savedResult = await newResult.save() 
             return { Say.success('result', savedResult, Say.created) }
             

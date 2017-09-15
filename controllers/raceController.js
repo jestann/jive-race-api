@@ -135,7 +135,7 @@ module.exports = new Class RaceController {
             if (!authorizer.race.teams(req.user, race)) { throw Err.notAuthorized }
             
             // query and return
-            let teams = race.teams
+            let teams = await Team.find({ race: race})
             return { Say.success('teams', teams) }
 
         } catch (error) { return Err.make(error) }
@@ -149,8 +149,38 @@ module.exports = new Class RaceController {
             if (!authorizer.race.results(req.user, race)) { throw Err.notAuthorized }
             
             // query and return success
-            let results = race.results
+            let results = await Result.find({ race: race })
             return { Say.success('results', results) }
+
+        } catch (error) { return Err.make(error) }
+    }
+    
+    async function open (req) {
+        try {
+            // authorize
+            let race = await Race.findById(req.params['id'])
+            if (!race) { throw Err.raceNotFound }
+            if (!authorizer.race.open(req.user, race)) { throw Err.notAuthorized }
+
+            // open race and return
+            race.open()
+            let savedRace = await race.save()
+            return { Say.success('race', savedRace, Say.opened) }
+
+        } catch (error) { return Err.make(error) }
+    }
+    
+    async function archive (req) {
+        try {
+            // authorize
+            let race = await Race.findById(req.params['id'])
+            if (!race) { throw Err.raceNotFound }
+            if (!authorizer.race.archive(req.user, race)) { throw Err.notAuthorized }
+
+            // archive and return
+            race.archive()
+            let savedRace = await race.save()
+            return { Say.success('race', savedRace, Say.archived) }
 
         } catch (error) { return Err.make(error) }
     }
