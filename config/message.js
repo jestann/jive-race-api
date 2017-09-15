@@ -6,6 +6,8 @@ module.exports = {
     registered: "Registered successfully.",
     joined:     "Joined successfully.",
     added:      "Added successfully.",
+    opened:     "Race opened for registration.",
+    archived:   "Race closed for registration.",
     success:    (dataName=null, data=null, message=null) => { 
         let result = { success: true, code: 200 }
         if (dataName && data) { result[dataName] = data }

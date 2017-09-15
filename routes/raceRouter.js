@@ -42,6 +42,16 @@ router.get('/:id/results', async (req, res) => {
     res.status(data.code).json(data)
 })
 
+router.post(':id/open', async (req, res) => {
+    let data = await raceController.open(req)
+    res.status(data.code).json(data)
+})
+
+router.post(':id/archive', async (req, res) => {
+    let data = await raceController.archive(req)
+    res.status(data.code).json(data)
+})
+
 router.post('/:id/setcoordinator', async (req, res) => {
     let data = await raceController.setCoordinator(req)
     res.status(data.code).json(data)

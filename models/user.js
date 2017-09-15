@@ -70,6 +70,7 @@ userSchema.methods.owns = function (team) {
     return false
 }
 
+
 // registers user for a specific race
 userSchema.methods.register = function (race) {
     if (race.open())
@@ -92,48 +93,51 @@ userSchema.methods.unregister = function (race) {
 }
 
 
+// CALLED FROM MEMBERIZER
 
-// ONLY CALLED FROM MEMBERIZER
-
-// leave a team as a member
+// leave past or present team as a member -- to leave as an owner, must transfer ownership via team.transfer
 userSchema.methods.memberLeaveTeam = function (team) {
-    if (team.id = this.currentTeam.id) {
-        // check they don't own their current team
-        if (!this.owns(this.currentTeam)) {
+    // check they don't own the team
+    if (!this.owns(team)) {
+        // if it's their current team
+        if (team.id === this.currentTeam.id) {
             this.currentTeam = null   
         }
+        this.teams = this.teams.filter((item) => item.id !== team.id)
     }
-    this.teams = this.teams.filter((item) => item.id !== team.id)
     // also must remove user from team list -- done in memberizer
-    }
 }
 
-// to leave a team as an owner, first transfer ownership via team.transfer
-
-// join a new team as a member // assumes only join teams on current race -- FIX?
+// join a new team as a member - doesn't work easily with a past race -- FIX?
 userSchema.methods.joinTeam = function (team) {
-    if (this.current()) {
-        // must leave a team first
-        if (!this.currentTeam) {
-            this.teams.push(team)
+    // if it's a current race
+    if (team.race.isCurrent) {
+        // must be registered for the race and leave the current team first
+        if (this.currentRace === team.race && !this.currentTeam) {
             this.currentTeam = team
+            this.teams.push(team)
         }
+    // if it's a past race, must have been part of that race
+    } else if (this.races.includes(team.race)) {
+        this.teams.push(team)
+        // allows multiple memberships per past race
+        // or can specifically search for and remove past team membership for that race
     }
     // also add member to team list -- done in memberizer
 }
 
 
 
-// ONLY CALLED FROM RESULTS CONtROLLER
+// CALLED FROM RESULT CONtROLLER
 
 userSchema.methods.addResult = function (result) {
     this.results.push(result)
-    // also add user to result
+    // also add user to result -- done in result controller
 }
 
 userSchema.methods.removeResult = function (result) {
     this.results = this.results.filter((item) => { item.id !== result.id })
-    // also remove user from result
+    // also remove user from result -- done in result controller
 }
 
 const userModel = mongoose.model('User', userSchema)

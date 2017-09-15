@@ -17,7 +17,7 @@ module.exports = {
         makeAdmin: (user, userInstance) =>   { user.isAdmin() },
         makeMember: (user, userInstance) =>  { user.isAdmin() },
         validSelfAttributes:                 ['email', 'username', 'password', 'firstName', 'lastName', 'bio', 'photo', 'birthdate', 'address', 'city', 'state', 'zip', 'phone'],
-        validAdminAttributes:                ['role', 'current', 'dateRegistered', 'currentTeam'],  // createdAt + updatedAt locked
+        validAdminAttributes:                ['role', 'currentRace', 'dateRegistered', 'currentTeam'],  // createdAt + updatedAt locked
         requiredAttributes:                  ['email', 'username', 'password']  // add additional required attributes?
     },
          
@@ -30,17 +30,20 @@ module.exports = {
         runners: (user, race) =>        { (user.isMember() && user.races.includes(race)) || user.isAdmin() },
         teams: (user, race) =>          { (user.isMember() && user.races.includes(race)) || user.isAdmin() },
         results: (user, race) =>        { (user.isMember() && user.races.includes(race)) || user.isAdmin() },
+        open: (user, race) =>           { user.isAdmin() },
+        archive: (user, race) =>        { user.isAdmin() },
+        setCoordinator: (user, race) => { user.isAdmin() },
         validAttributes:                ['year', 'name', 'description', 'date', 'startingLocation', 'endingLocation', 'coordinator'], // createdAt + upcatedAT locked
         requiredAttributes:             ['year', 'name', 'date']
     },
     
     team: {
         index: (user) =>                { user.isMember() },
-        create: (user) =>               { (user.isMember() && user.current) || user.isAdmin() },
-        show: (user, team) =>           { (user.isMember() && user.current) || user.isAdmin() },
+        create: (user) =>               { (user.isMember() && user.isCurrent()) || user.isAdmin() },
+        show: (user, team) =>           { (user.isMember() && user.isCurrent()) || user.isAdmin() },
         update: (user, team) =>         { (user.isMember() && user === team.owner) || user.isAdmin() },
         destroy: (user, team) =>        { (user.isMember() && user === team.owner) || user.isAdmin() },
-        members: (user, team) =>        { (user.isMember() && user.current) || user.isAdmin() },
+        members: (user, team) =>        { (user.isMember() && user.isCurrent()) || user.isAdmin() },
         results: (user, team) =>        { (user.isMember() && user.currentTeam === team) || user.isAdmin() },
         transfer: (user, team) =>       { (user.isMember() && user === team.owner) || user.isAdmin() },
         validAttributes:                ['name', 'owner', 'race', 'description', 'meetingLocation', 'slackChannel'], // createdAt + updatedAt locked

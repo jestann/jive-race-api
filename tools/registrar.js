@@ -6,21 +6,15 @@ const User = require('./../models/Race').model
 const User = require('./../models/Team').model
 const User = require('./../models/Result').model
 
-module.exports = {
-    register:   function (user, race) {
-        
-    }
-        
+module.exports = new Class Registrar {
+    
+    // register for a race
+    function register (user, race) {
+
     }
     
-    try { 
-        if (!req.headers.token) { throw Err.noToken }
-        req.decoded = await jwt.verify(req.headers.token, config.secret)
-        req.user = await User.findById(req.decoded.id)
-        next()
-    } catch (error) { return Err.make(error) }
-    
-    unregister {
+    // un-register from a race
+    function unregister (user, race) {
         
     }
 }
