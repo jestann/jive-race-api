@@ -41,8 +41,13 @@ teamSchema.methods.addResult = function (result) {
     this.results.push(result)
 }
 
+teamSchema.methods.removeResult = function (result) {
+    this.results = this.results.filter((item) => { item.id !== result.id })
+}
+
 teamSchema.methods.transfer = function (user) {
-    this.owner = user // retains previous owner as team member
+    this.owner = user 
+    // retains previous owner as member on team list
 }
 
 const teamModel = mongoose.model('Team', teamSchema)

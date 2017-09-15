@@ -35,7 +35,10 @@ raceSchema.methods.setCoordinator = function (user) {
 
 raceSchema.methods.addRunner = function (user) {
     this.runners.push(user)
+    // also add race to runner -- done in registrar
 }
+
+raceSchema
 
 raceSchema.methods.addTeam = function (team) {
     this.teams.push(team)
@@ -43,6 +46,10 @@ raceSchema.methods.addTeam = function (team) {
 
 raceSchema.methods.addResult = function (result) {
     this.results.push(result)
+}
+
+raceSchema.methods.removeResult = function (result) {
+    this.results = this.results.filter((item) => { item.id !== result.id })
 }
 
 raceSchema.methods.rank = function () {

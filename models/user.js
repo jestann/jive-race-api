@@ -25,11 +25,11 @@ const userSchema = new Schema({
     zip: String,
     phone: String,
     races: [Race.schema],
-    current: Boolean, // registered for current race ... is this a reserved word?
-    dateRegistered: Date,
     teams: [Team.schema],
-    currentTeam: { type: Team.schema, default: null },
-    results: [Result.schema]
+    results: [Result.schema],
+    currentRace: { type: Race.schema, default: null }, // last race registered
+    dateRegistered: Date, // date last registered
+    currentTeam: { type: Team.schema, default: null } // current team
 })
 
 // can't use arrow functions here because of 'this' syntax
@@ -59,50 +59,81 @@ userSchema.methods.isAdmin = function () {
     return false
 }
 
+// registered for the current race?
+// FIX - what if the last race they registered for isn't current, but one of their races is?
+userSchema.methods.current = function () {
+    return this.currentRace.isCurrent()
+}
+
 userSchema.methods.owns = function (team) {
-    if team.owner.id === this.id { return true }
+    if (team.owner.id === this.id) { return true }
     return false
 }
 
-// registers for a specific race
+// registers user for a specific race
 userSchema.methods.register = function (race) {
-    this.races.push(race)
-    this.current = true
+    if (race.open())
+    this.currentRace = race
     this.dateRegistered = new Date()
     this.currentTeam = null
-    // race.addRunner(this) // also call race.addRunner on this user here? leave that to the controller.
+    // also must add runner to race object -- done in registrar
 }
 
-userSchema.methods.leaveTeam = function (team) {
-    if (this.currentTeam) {
-        if (this.owns(this.currentTeam)) {
-            throw { Err.transferOwnership }
-        }
-        
-        // remove team from teams array
-        this.teams = this.teams.filter((team) => team.id !== this.currentTeam.id)
-
-        // remove member from team list
-        this.currentTeam.members = this.currentTeam.members.filter((member) => member.id !== this.id)
-        
-        // empty currentTeam
+// removes a user from any race, current or past
+userSchema.methods.unregister = function (race) {
+    // remove a user from the current race
+    if (this.currentRace.id === race.id) { 
+        this.currentRace = null 
+        this.dateRegistered = null
         this.currentTeam = null
     }
+    this.races = this.races.filter((item) => {item.id !== race.id})
+    // also must remove runner from race object -- done in registrar
 }
 
-// this also removes the  
-userSchema.methods.joinTeam = function (team) {
-    if (this.current) {
-        if (this.currentTeam) { this.leaveTeam() } // if already on a team
-        this.teams.push(team)
-        this.currentTeam = team
-        
-        this.currentTeam.addMember(this) // add to team list
+
+
+// ONLY CALLED FROM MEMBERIZER
+
+// leave a team as a member
+userSchema.methods.memberLeaveTeam = function (team) {
+    if (team.id = this.currentTeam.id) {
+        // check they don't own their current team
+        if (!this.owns(this.currentTeam)) {
+            this.currentTeam = null   
+        }
+    }
+    this.teams = this.teams.filter((item) => item.id !== team.id)
+    // also must remove user from team list -- done in memberizer
     }
 }
+
+// to leave a team as an owner, first transfer ownership via team.transfer
+
+// join a new team as a member // assumes only join teams on current race -- FIX?
+userSchema.methods.joinTeam = function (team) {
+    if (this.current()) {
+        // must leave a team first
+        if (!this.currentTeam) {
+            this.teams.push(team)
+            this.currentTeam = team
+        }
+    }
+    // also add member to team list -- done in memberizer
+}
+
+
+
+// ONLY CALLED FROM RESULTS CONtROLLER
 
 userSchema.methods.addResult = function (result) {
     this.results.push(result)
+    // also add user to result
+}
+
+userSchema.methods.removeResult = function (result) {
+    this.results = this.results.filter((item) => { item.id !== result.id })
+    // also remove user from result
 }
 
 const userModel = mongoose.model('User', userSchema)

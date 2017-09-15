@@ -91,18 +91,24 @@ module.exports = new Class ResultController {
                 let race = await Race.findById(req.body.race.id) 
                 if (!race) { throw Err.raceNotFound }
                 result.race = race
+                race.addResult(result)
+                await race.save()
             }
             
             if (req.body.team) {
                 let team = await Team.findById(req.body.team.id)
                 if (!team) { throw Err.teamNotFound }
                 result.team = team
+                team.addResult(result)
+                await team.save()
             }
             
             if (req.body.runner) {
                 let runner = await User.findById(req.body.runner.id)
                 if (!runner) { throw Err.userNotFound }
                 result.runner = runner
+                runner.addResult(result)
+                await runner.save()
             }
 
             // save updates
@@ -119,7 +125,23 @@ module.exports = new Class ResultController {
             if (!result) { throw Err.itemNotFound }
             if (!authorizer.result.destroy(req.user, result)) { throw Err.notAuthorized }
 
-            // delete and return success
+            // delete from all models 
+            let race = await Race.findById(result.race.id)
+            if (!race) { throw Err.raceNotFound }
+            race.removeResult(result)
+            await race.save()
+            
+            let team = await Team.findById(result.team.id)
+            if (!team) { throw Err.teamNotFound }
+            team.removeResult(result)
+            await team.save()
+            
+            let runner = await User.findById(result.runner.id)
+            if (!runner) { throw Err.userNotFound }
+            runner.removeResult(result)
+            await runner.save()
+            
+            // delete result and return success
             await result.remove()
             return { Say.success(Say.destroyed) }
             
