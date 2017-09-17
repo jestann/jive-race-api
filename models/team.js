@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
-const Schema = mongoose.Schema;
+const Schema = mongoose.Schema
+const ObjectId = mongoose.mongo.ObjectId 
 
 const User = './user'
 const Race = './race'
@@ -9,14 +10,14 @@ const Err = './../config/error'
 const teamSchema = new Schema({
     createdAt: Date,
     updatedAt: Date,
-    race: Race.schema,
+    raceId: ObjectId,
     name: String,
     description: String,
     slackChannel: String,
     meetingLocation: String,
-    owner: User.schema,
-    members: [User.schema],
-    results: [Result.schema]
+    ownerId: ObjectId, // user id
+    members: [ObjectId], // array of user ids
+    results: [ObjectId] // array of result ids
 })
 
 // can't use arrow functions here
@@ -33,34 +34,35 @@ teamSchema.pre('save', function(next) {
 
 // add member to team list
 teamSchema.methods.addMember = function (user) {
-    this.members.push(user)
+    this.members.push(user.id)
     // also add team to user -- done in memberizer
 }
 
 // remove member from team list -- doesn't remove owner
 teamSchema.methods.removeMember = function (user) {
-    if (this.owner.id !== user.id) {
-        this.members = this.members.filter((member) => { member.id !== user.id })
+    if (this.ownerId !== user.id) {
+        this.members = this.members.filter((memberId) => { memberId !== user.id })
     }
     // also remove team from user -- done in memberizer
 }
 
 // transfer ownership -- required to remove owner from a team
-teamSchema.methods.transfer = function (user) {
-    this.owner = user 
+teamSchema.methods.transferOwnership = function (newOwner) {
+    this.ownerId = newOwner.id
     // retains previous owner as member on team list
+    // new owner must be a team member -- per memberizer
 }
 
 
 // CALLED FROM RESULT ROUTER
 
 teamSchema.methods.addResult = function (result) {
-    this.results.push(result)
+    this.results.push(result.id)
     // also add team to result -- done in result router
 }
 
 teamSchema.methods.removeResult = function (result) {
-    this.results = this.results.filter((item) => { item.id !== result.id })
+    this.results = this.results.filter((resultId) => { resultId !== result.id })
     // also remove team from result -- done in result router
 }
 

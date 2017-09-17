@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 const config = require('./../config/config')
 const Err = require('./../config/error')
-const User = require('./../models/User').model
+const User = require('./../models/user').model
 
 module.exports = (req, res, next) => {
     try { 

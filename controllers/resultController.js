@@ -10,10 +10,7 @@ const Result = require('./../models/result').model
 module.exports = new Class ResultController {
     async function index (req) {
         try {
-            // authorize
             if (!authorizer.result.index(req.user)) { throw Err.notAuthorized }
-            
-            // query and return
             let results = await Result.find({})
             return { Say.success('results', results) }
             
@@ -26,43 +23,50 @@ module.exports = new Class ResultController {
             if (!authorizer.result.create(req.user)) { throw Err.notAuthorized }
         
             // check required attributes -- add validation here
-            if (!req.body.race || !req.body.team || !req.body.runner || !req.body.time) { throw Err.missingData } // if missing any required data
-            
-            let race = await Race.findById(req.body.race.id)
-            if (!race) { throw Err.raceNotFound }
-            
-            let team = await Team.findById(req.body.team.id)
-            if (!team) { throw Err.teamNotFound }
-            
-            let runner = await User.findById(req.body.runner.id)
-            if (!runner) { throw Err.userNotFound }
-            
-            // create new team
+            if (!req.body.raceId || !req.body.runnerId || !req.body.time) { throw Err.missingData }
             let newResult = new Result({
-                race: race,
-                team: team,
-                runner: runner,
                 time: time
             })
+            
+            // check if runner already has a result for this race. if not, add result to runner
+            let runner = await User.findById(req.body.runnerId)
+            if (!runner) { throw Err.userNotFound }
+            
+            let results = await Results.find({ runnerId: runner.id, raceId: race.id })
+            if (results.length > 0) { throw Err.runnerHasResult }
+
+            newResult.runnerId = runner.id
+            runner.addResult(result)
+            await runner.save()
+
+            // add result to race
+            let race = await Race.findById(req.body.raceId)
+            if (!race) { throw Err.raceNotFound }
+            newResult.raceId = race.id
+            race.addResult(result)
+            await race.save()
+            
+            // add result to runner's current team
+            let team = await Team.findById(runner.currentTeamId)
+            if (!team) { throw Err.teamNotFound }
+            newResult.teamId = team.id
+            team.addResult(result)
+            await team.save()
             
             // add additional attributes
             if (req.body.note) { newResult.note = req.body.note }
 
-            // save and return
-            let savedResult = await newResult.save() 
-            return { Say.success('result', savedResult, Say.created) }
+            await newResult.save() 
+            return { Say.success('result', newResult, Say.created) }
             
         } catch (error) { return Err.make(error) }
     }
     
     async function show (req) {
         try {
-            // authorize
             let result = await Result.findById(req.params['id'])
             if (!result) { throw Err.itemNotFound }
             if (!authorizer.result.show(req.user, result)) { throw Err.notAuthorized }
-            
-            // return instance
             return { Say.success('result', result) }
             
         } catch (error) { return Err.make(error) }
@@ -75,37 +79,17 @@ module.exports = new Class ResultController {
             if (!result) { throw Err.itemNotFound }
             if (!authorizer.result.update(req.user, result)) { throw Err.notAuthorized }
             
+            // does not allow updating of raceId, teamId, or runnerId -- delete result and re-enter if needed
+            
             // update attributes -- add validation here
-            if (req.body.time) { result.time = req.body.time }
-            if (req.body.note) { result.note = req.body.note }
-            
-            if (req.body.race) {
-                let race = await Race.findById(req.body.race.id) 
-                if (!race) { throw Err.raceNotFound }
-                result.race = race
-                race.addResult(result)
-                await race.save()
-            }
-            
-            if (req.body.team) {
-                let team = await Team.findById(req.body.team.id)
-                if (!team) { throw Err.teamNotFound }
-                result.team = team
-                team.addResult(result)
-                await team.save()
-            }
-            
-            if (req.body.runner) {
-                let runner = await User.findById(req.body.runner.id)
-                if (!runner) { throw Err.userNotFound }
-                result.runner = runner
-                runner.addResult(result)
-                await runner.save()
+            for attribute in req.body {
+                if (authorizor.result.validAttributes.includes(attribute)) {
+                    result[attribute] = req.body[attribute]
+                }
             }
 
-            // save updates
-            let savedResult = await result.save()
-            return { Say.success('result', savedResult, Say.updated) }
+            await result.save()
+            return { Say.success('result', result, Say.updated) }
             
         } catch (error) { return Err.make(error) }
     }
@@ -118,22 +102,21 @@ module.exports = new Class ResultController {
             if (!authorizer.result.destroy(req.user, result)) { throw Err.notAuthorized }
 
             // delete from all models 
-            let race = await Race.findById(result.race.id)
+            let race = await Race.findById(result.raceId)
             if (!race) { throw Err.raceNotFound }
             race.removeResult(result)
             await race.save()
             
-            let team = await Team.findById(result.team.id)
+            let team = await Team.findById(result.teamId)
             if (!team) { throw Err.teamNotFound }
             team.removeResult(result)
             await team.save()
             
-            let runner = await User.findById(result.runner.id)
+            let runner = await User.findById(result.runnerId)
             if (!runner) { throw Err.userNotFound }
             runner.removeResult(result)
             await runner.save()
             
-            // delete result and return success
             await result.remove()
             return { Say.success(Say.destroyed) }
             

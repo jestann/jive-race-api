@@ -10,10 +10,7 @@ const Result = require('./../models/result').model
 module.exports = new Class RaceController {
     async function index (req) {
         try {
-            // authorize
             if (!authorizer.race.index(req.user)) { throw Err.notAuthorized }
-            
-            // query and return
             let races = await Race.find({})
             return { Say.success('races', races) }
             
@@ -22,20 +19,14 @@ module.exports = new Class RaceController {
 
     async function create (req) {
         try {
-            // authorize
             if (!authorizer.race.create(req.user)) { throw Err.notAuthorized }
         
             // add required attributes -- add validation here
             if (!req.body.year || !req.body.name || !req.body.date) { throw Err.missingData } // if missing any required data
-            let year = req.body.year
-            let name = req.body.name
-            let date = req.body.date
-
-            // create new race
             let newRace = new Race({
-                year: year,
-                name: name,
-                date: date
+                year: req.body.year,
+                name: req.body.name,
+                date: req.body.date
             })
 
             // add additional attributes
@@ -44,28 +35,25 @@ module.exports = new Class RaceController {
             if (req.body.endingLocation) { newRace.endingLocation = req.body.endingLocation }
             
             // set coordinator
-            if (req.body.coordinator) { 
-                let coordinator = await User.findById(req.body.coordinator.id) 
+            if (req.body.coordinatorId) { 
+                let coordinator = await User.findById(req.body.coordinatorId) 
                 if (!coordinator) { throw Err.userNotFound }
-                newRace.coordinator = coordinator
+                newRace.coordinatorId = coordinator.id
                 // make this coordinator an admin here?
             }
 
-            // save and return
-            let savedRace = await newRace.save() 
-            return { Say.success('race', savedRace, Say.created) }
+            await newRace.save() 
+            return { Say.success('race', race, Say.created) }
             
         } catch (error) { return Err.make(error) }
     }
     
     async function show (req) {
         try {
-            // authorize
             let race = await Race.findById(req.params['id'])
             if (!race) { throw Err.raceNotFound }
             if (!authorizer.race.show(req.user, race)) { throw Err.notAuthorized }
             
-            // return instance
             return { Say.success('race', race) }
             
         } catch (error) { return Err.make(error) }
@@ -80,21 +68,20 @@ module.exports = new Class RaceController {
             
             // update attributes -- add validation here
             for attribute in req.body {
-                if (authorizor.race.validAttributes.includes(attribute) && attribute !== 'coordinator') {
+                if (authorizor.race.validAttributes.includes(attribute) && attribute !== 'coordinatorId') {
                     race[attribute] = req.body[attribute]
                 }
             }
             
             // handle coordinator separately
-            if (req.body.coordinator) {
-                let coordinator = await User.findById(req.body.coordinator.id) 
+            if (req.body.coordinatorId) {
+                let coordinator = await User.findById(req.body.coordinatorId) 
                 if (!coordinator) { throw Err.userNotFound }
-                race.coordinator = coordinator
+                race.coordinatorId = coordinator.id
             }
-
-            // save updates
-            let savedRace = await race.save()
-            return { Say.success('race', savedRace, Say.updated) }
+            
+            await race.save()
+            return { Say.success('race', race, Say.updated) }
             
         } catch (error) { return Err.make(error) }
     }
@@ -105,6 +92,9 @@ module.exports = new Class RaceController {
             let race = await Race.findById(req.params['id'])
             if (!race) { throw Err.raceNotFound }
             if (!authorizer.race.destroy(req.user, race)) { throw Err.notAuthorized }
+            
+            // only allow deletion of a race with all teams, runners, and results removed
+            if (race.runners.length > 0 || race.teams.length > 0 || race.results.length > 0) { throw Err.stillContainsData }
 
             // delete and return success
             await race.remove()
@@ -121,7 +111,10 @@ module.exports = new Class RaceController {
             if (!authorizer.race.runners(req.user, race)) { throw Err.notAuthorized }
             
             // query and return
-            let runners = race.runners
+            let runners = []
+            await race.runners.forEach(async (runnerId) => {
+                let runner = await User.findById(runnerId) { if (runner) { runners.push(runner) } }
+            })
             return { Say.success('runners', runners) }
 
         } catch (error) { return Err.make(error) }
@@ -135,7 +128,10 @@ module.exports = new Class RaceController {
             if (!authorizer.race.teams(req.user, race)) { throw Err.notAuthorized }
             
             // query and return
-            let teams = await Team.find({ race: race})
+            let teams = []
+            await race.teams.forEach(async (teamId) => {
+                let team = await Team.findById(teamId) { if (team) { teams.push(team) } }
+            })
             return { Say.success('teams', teams) }
 
         } catch (error) { return Err.make(error) }
@@ -149,7 +145,10 @@ module.exports = new Class RaceController {
             if (!authorizer.race.results(req.user, race)) { throw Err.notAuthorized }
             
             // query and return success
-            let results = await Result.find({ race: race })
+            let results = []
+            await race.results.forEach(async (resultId) => {
+                let result = await Result.findById(resultId) { if (result) { results.push(result) } }
+            })
             return { Say.success('results', results) }
 
         } catch (error) { return Err.make(error) }
@@ -164,8 +163,8 @@ module.exports = new Class RaceController {
 
             // open race and return
             race.open()
-            let savedRace = await race.save()
-            return { Say.success('race', savedRace, Say.opened) }
+            await race.save()
+            return { Say.success('race', race, Say.opened) }
 
         } catch (error) { return Err.make(error) }
     }
@@ -179,8 +178,8 @@ module.exports = new Class RaceController {
 
             // archive and return
             race.archive()
-            let savedRace = await race.save()
-            return { Say.success('race', savedRace, Say.archived) }
+            await race.save()
+            return { Say.success('race', race, Say.archived) }
 
         } catch (error) { return Err.make(error) }
     }
@@ -193,15 +192,15 @@ module.exports = new Class RaceController {
             if (!authorizer.race.setCoordinator(req.user, race)) { throw Err.notAuthorized }
 
             // set coordinator
-            if (!req.body.coordinator) { throw Err.missingData }
-            let coordinator = await User.findById(req.body.coordinator.id) 
+            if (!req.body.coordinatorId) { throw Err.missingData }
+            let coordinator = await User.findById(req.body.coordinatorId) 
             if (!coordinator) { throw Err.userNotFound }
             race.setCoordinator(coordinator)
             // make this coordinator an admin here?
 
             // save updates
-            let savedRace = await race.save()
-            return { Say.success('race', savedRace, Say.updated) }
+            await race.save()
+            return { Say.success('race', race, Say.updated) }
 
         } catch (error) { return Err.make(error) }
     }

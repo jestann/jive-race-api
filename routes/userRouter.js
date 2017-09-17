@@ -47,8 +47,18 @@ router.post('/:id/register', async (req, res) => {
     res.status(data.code).json(data)
 })
 
+router.post('/:id/unregister', async (req, res) => {
+    let data = await userController.unregister(req)
+    res.status(data.code).json(data)
+})
+
 router.post('/:id/jointeam', async (req, res) => {
     let data = await userController.joinTeam(req)
+    res.status(data.code).json(data)
+})
+
+router.post('/:id/leaveteam', async (req, res) => {
+    let data = await userController.leaveTeam(req)
     res.status(data.code).json(data)
 })
 

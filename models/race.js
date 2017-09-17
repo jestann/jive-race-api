@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
-const Schema = mongoose.Schema;
+const Schema = mongoose.Schema
+const ObjectId = mongoose.mongo.ObjectId
 
 const User = './user'
 const Team = './team'
@@ -14,11 +15,11 @@ const raceSchema = new Schema({
     date: { type: Date, required: true },
     startingLocation: String,
     endingLocation: String,
-    coordinator: User.schema,
-    isCurrent: Boolean, // open for registration
-    runners: [User.schema],
-    teams: [Team.schema],
-    results: [Result.schema]
+    coordinatorId: ObjectId, // user id of coordinator
+    isOpen: Boolean, // open for registration
+    runners: [ObjectId], // array of user ids
+    teams: [ObjectId], // array of team ids
+    results: [ObjectId] // array of result ids
 })
 
 // can't use arrow functions here
@@ -32,16 +33,16 @@ raceSchema.pre('save', function(next) {
 
 // open this race for registration
 raceSchema.methods.open = function () {
-    this.isCurrent = true
+    this.isOpen = true
 }
 
 // archive this race
 raceSchema.methods.archive = function () {
-    this.isCurrent = false
+    this.isOpen = false
 }
 
 raceSchema.methods.setCoordinator = function (user) {
-    this.coordinator = user
+    this.coordinatorId = user.id
 }
 
 
@@ -49,13 +50,13 @@ raceSchema.methods.setCoordinator = function (user) {
 
 // adds a runner
 raceSchema.methods.addRunner = function (user) {
-    this.runners.push(user)
+    this.runners.push(user.id)
     // also add race to runner -- done in registrar
 }
 
 // removes a runner
 raceSchema.methods.removeRunner = function (user) {
-    this.runners = this.runners.filter((runner) => { runner.id !== user.id })
+    this.runners = this.runners.filter((runnerId) => { runnerId !== user.id })
     // also remove race from runner -- done in registrar
 }
 
@@ -64,13 +65,13 @@ raceSchema.methods.removeRunner = function (user) {
 
 // adds a team
 raceSchema.methods.addTeam = function (team) {
-    this.teams.push(team)
+    this.teams.push(team.id)
     // also adds race to team -- called from team create/update method
 }
 
 // removes a team
 raceSchema.methods.removeTeam = function (team) {
-    this.teams = this.teams.filter((item) => { item.id !== team.id })
+    this.teams = this.teams.filter((teamId) => { teamId !== team.id })
     // also remove race from team -- called from team update/delete method
 }
 
@@ -78,12 +79,12 @@ raceSchema.methods.removeTeam = function (team) {
 // CALLED FROM RESULT CONTROLLER
 
 raceSchema.methods.addResult = function (result) {
-    this.results.push(result)
+    this.results.push(result.id)
     // also add race to result -- done in result controller
 }
 
 raceSchema.methods.removeResult = function (result) {
-    this.results = this.results.filter((item) => { item.id !== result.id })
+    this.results = this.results.filter((resultId) => { resultId !== result.id })
     // also remove race from result -- done in result controller
 }
 
