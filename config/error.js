@@ -1,5 +1,6 @@
 module.exports = {
     noToken:            { code: 403, body: "No token provided." },
+    authError:          { code: 403, body: "Authentication error." },
     userNotFound:       { code: 400, body: "User not found." },
     wrongPassword:      { code: 400, body: "Wrong password." },
     notAuthorized:      { code: 403, body: "Not authorized." },
@@ -10,10 +11,11 @@ module.exports = {
     transferOwnership:  { code: 400, body: "Transfer ownership for this team before creating a new team." },
     stillContainsData:  { code: 400, body: "Cannot delete item. Still contains linked data." },
     notOpen:            { code: 400, body: "Race not open for registration." },
+    notCurrent:         { code: 400, body: "User not registered for current race." },
     editsClosed:        { code: 400, body: "Cannot be changed. Editing period closed." },
     stillOnTeam:        { code: 400, body: "User still on a team and cannot leave race." },
     notOnTeam:          { code: 400, body: "User must join team first before being made owner." },
     runnerHasResult:    { code: 400, body: "Runner already has a result entered for this race." },
     defaultErr:         { code: 500, body: "Error." },
-    make:               (error) => { return { success: false, code: error.code || 500, error: error.body || error } }
+    make:               (error) => { return { success: false, code: error.code || 500, error: error.body || error.error || error } }
 }

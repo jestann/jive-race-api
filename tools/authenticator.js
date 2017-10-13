@@ -3,11 +3,18 @@ const config = require('./../config/config')
 const Err = require('./../config/error')
 const User = require('./../models/user').model
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
     try { 
         if (!req.headers.token) { throw Err.noToken }
-        req.decoded = await jwt.verify(req.headers.token, config.secret)
-        req.user = await User.findById(req.decoded.id)
+        
+        let decoded = await jwt.verify(req.headers.token, config.secret)
+        if (!decoded) { throw Err.authError }
+        req.decoded = decoded
+        
+        let user = await User.findById(req.decoded.id)
+        if (!user) { throw Err.userNotFound }
+        req.user = user
+        
         next()
     } catch (error) { return Err.make(error) }
 }

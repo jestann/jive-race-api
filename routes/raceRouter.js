@@ -1,5 +1,6 @@
 const router = require('express').Router()
-const raceController = require('./../controllers/raceController')
+const RaceController = require('./../controllers/raceController')
+const raceController = new RaceController()
 
 router.get('/', async (req, res) => {
     let data = await raceController.index(req)
@@ -42,17 +43,17 @@ router.get('/:id/results', async (req, res) => {
     res.status(data.code).json(data)
 })
 
-router.post(':id/open', async (req, res) => {
+router.put('/:id/open', async (req, res) => {
     let data = await raceController.open(req)
     res.status(data.code).json(data)
 })
 
-router.post(':id/archive', async (req, res) => {
+router.put('/:id/archive', async (req, res) => {
     let data = await raceController.archive(req)
     res.status(data.code).json(data)
 })
 
-router.post('/:id/setcoordinator', async (req, res) => {
+router.put('/:id/setcoordinator', async (req, res) => {
     let data = await raceController.setCoordinator(req)
     res.status(data.code).json(data)
 })

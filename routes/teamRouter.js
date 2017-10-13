@@ -1,5 +1,6 @@
 const router = require('express').Router()
-const teamController = require('./../controllers/teamController')
+const TeamController = require('./../controllers/teamController')
+const teamController = new TeamController()
 
 router.get('/', async (req, res) => {
     let data = await teamController.index(req)
@@ -37,7 +38,7 @@ router.get('/:id/results', async (req, res) => {
     res.status(data.code).json(data)
 })
 
-router.post('/:id/transfer', async (req, res) => {
+router.put('/:id/transfer', async (req, res) => {
     let data = await teamController.transfer(req)
     res.status(data.code).json(data)
 })

@@ -1,5 +1,10 @@
+const mongoose = require('mongoose')
+const ObjectId = mongoose.mongo.ObjectId
 const authorizer = require('./../tools/authorizer')
-const memberizer = require('./../tools/memberizer')
+
+const Memberizer = require('./../tools/memberizer')
+const memberizer = new Memberizer()
+
 const Err = require('./../config/error')
 const Say = require('./../config/message')
 
@@ -8,23 +13,24 @@ const Race = require('./../models/race').model
 const Team = require('./../models/team').model
 const Result = require('./../models/result').model
 
-module.exports = new Class TeamController {
-    async function index (req) {
+class TeamController {
+    async index (req) {
         try {
-            if (!authorizer.team.index(req.user)) { throw Err.notAuthorized }
+            // if (!authorizer.team.index(req.user)) { throw Err.notAuthorized }
             let teams = await Team.find({})
-            return { Say.success('teams', teams) }
+            if (!teams) { throw Err.teamNotFound }
+            return Say.success('teams', teams)
             
         } catch (error) { return Err.make(error) }
     }
 
-    async function create (req) {
+    async create (req) {
         try {
-            let authorized = await authorizor.team.create(req.user)
-            if (!authorized) { throw Err.notAuthorized }
+            // let authorized = await authorizer.team.create(req.user)
+            // if (!authorized) { throw Err.notAuthorized }
         
-            // check required attributes -- add validation here
-            if (!req.body.raceId || !req.body.name || !req.body.ownerId) { throw Err.missingData } // if missing any required data
+            // check required attributes -- add validation here, checks for required aren't as clean as mine
+            // if (!req.body.name || !req.body.raceId || !req.body.ownerId) { throw Err.missingData }
             let newTeam = new Team({
                 name: req.body.name
             })
@@ -35,52 +41,59 @@ module.exports = new Class TeamController {
             if (req.body.slackChannel) { newTeam.slackChannel = req.body.slackChannel }
             
             // add team to race
-            let race = await Race.findById(req.body.raceId)
+            let raceId = new ObjectId(req.body.raceId)
+            let race = await Race.findById(raceId)
             if (!race) { throw Err.raceNotFound }
-            newTeam.raceId = race.id
-            race.addTeam(team)
+            
+            // race must be current
+            if (!race.isCurrent) { throw Err.notCurrent }
+            newTeam.raceId = new ObjectId(race._id)
+            race.addTeam(newTeam)
             await race.save()
 
             // find owner
-            let owner = await User.findById(req.body.ownerId)
+            let ownerId = new ObjectId(req.body.ownerId)
+            let owner = await User.findById(ownerId)
             if (!owner) { throw Err.userNotFound }
             
             // check to see if owner already has another team they own
-            let ownersCurrentTeam = await Team.findById(owner.currentTeamId)
-            if (owner.owns(ownersCurrentTeam) { throw Err.transferOwnership }
-            
+            if (owner.currentTeamId) {
+                let ownersCurrentTeam = await Team.findById(new ObjectId(owner.currentTeamId))
+                if (owner.owns(ownersCurrentTeam)) { throw Err.transferOwnership }
+            }
+
             // if not, owner joins team
-            newTeam.ownerId = owner.id
-            let joined = memberizer.memberJoinTeam(owner, team)
-            if (!joined) { throw joined }
+            newTeam.ownerId = new ObjectId(owner._id)
+            let joined = await memberizer.memberJoinTeam(owner, newTeam)
+            if (!joined.success) { throw Err.make(joined) }
 
             await newTeam.save() 
-            return { Say.success('team', newTeam, Say.created) }
+            return Say.success('team', newTeam, Say.created)
             
         } catch (error) { return Err.make(error) }
     }
     
-    async function show (req) {
+    async show (req) {
         try {
             let team = await Team.findById(req.params['id'])
             if (!team) { throw Err.teamNotFound }
-            if (!authorizer.team.show(req.user, team)) { throw Err.notAuthorized }
+            // if (!authorizer.team.show(req.user, team)) { throw Err.notAuthorized }
             
-            return { Say.success('team', team) }
+            return Say.success('team', team)
             
         } catch (error) { return Err.make(error) }
     }
     
-    async function update (req) {
+    async update (req) {
         try {
             // authorize
             let team = await Team.findById(req.params['id'])
             if (!team) { throw Err.teamNotFound }
-            if (!authorizer.team.update(req.user, team)) { throw Err.notAuthorized }
+            // if (!authorizer.team.update(req.user, team)) { throw Err.notAuthorized }
             
             // update attributes -- add validation here
-            for attribute in req.body {
-                if (authorizor.team.validAttributes.includes(attribute) && attribute !== 'ownerId') {
+            for (let attribute in req.body) {
+                if (authorizer.team.validAttributes.includes(attribute) && attribute !== 'ownerId') {
                     team[attribute] = req.body[attribute]
                 }
             }
@@ -95,26 +108,26 @@ module.exports = new Class TeamController {
                 
                 // check to see if new owner already owns a team
                 let ownersCurrentTeam = await Team.findById(owner.currentTeamId)
-                if (owner.owns(ownersCurrentTeam) { throw Err.transferOwnership }
+                if (owner.owns(ownersCurrentTeam)) { throw Err.transferOwnership }
             
                 // if not, owner joins team
                 team.ownerId = owner.id
                 let joined = memberizer.memberJoinTeam(owner, team)
-                if (!joined) { throw joined }
+                if (!joined.success) { throw Err.make(joined) }
             }
             
             await team.save()
-            return { Say.success('team', team, Say.updated) }
+            return Say.success('team', team, Say.updated)
             
         } catch (error) { return Err.make(error) }
     }
     
-    async function destroy (req) {
+    async destroy (req) {
         try {
             // authorize
             let team = await Team.findById(req.params['id'])
             if (!team) { throw Err.teamNotFound }
-            if (!authorizer.team.destroy(req.user, team)) { throw Err.notAuthorized }
+            // if (!authorizer.team.destroy(req.user, team)) { throw Err.notAuthorized }
             
             // only allowed if team has no results
             if (team.results.length > 0) { throw Err.editsClosed }
@@ -124,7 +137,7 @@ module.exports = new Class TeamController {
                 let member = await User.findById(memberId)
                 if (member) {
                     let left = await memberizer.memberLeaveTeam(member, team)
-                    if (!left.success) { throw left }
+                    if (!left.success) { throw Err.make(left) }
                 }
             })
 
@@ -135,51 +148,53 @@ module.exports = new Class TeamController {
             await race.save()
 
             await team.remove()
-            return { Say.success(Say.destroyed) }
+            return Say.success(Say.destroyed)
             
         } catch (error) { return Err.make(error) }
     }
     
-    async function members (req) {
+    async members (req) {
         try {
             // authorize
             let team = await Team.findById(req.params['id'])
             if (!team) { throw Err.teamNotFound }
-            if (!authorizer.team.members(req.user, team)) { throw Err.notAuthorized }
+            // if (!authorizer.team.members(req.user, team)) { throw Err.notAuthorized }
             
             // query and return
             let members = []
             await team.members.forEach(async (memberId) => {
-                let member = await User.findById(memberId) { if (member) { members.push(member) } }
+                let member = await User.findById(memberId)
+                if (member) { members.push(member) }
             })
-            return { Say.success('members', members) }
+            return Say.success('members', members)
 
         } catch (error) { return Err.make(error) }
     }
     
-    async function results (req) {
+    async results (req) {
         try {
             // authorize
             let team = await Team.findById(req.params['id'])
             if (!team) { throw Err.teamNotFound }
-            if (!authorizer.team.results(req.user, team)) { throw Err.notAuthorized }
+            // if (!authorizer.team.results(req.user, team)) { throw Err.notAuthorized }
             
             // query and return success
             let results = []
             await team.results.forEach(async (resultId) => {
-                let result = await Result.findById(resultId) { if (result) { results.push(result) } }
+                let result = await Result.findById(resultId)
+                if (result) { results.push(result) }
             })
             return Say.success('results', results)
 
         } catch (error) { return Err.make(error) }
     }
     
-    async function transfer (req) {
+    async transfer (req) {
         try {
             // authorize
             let team = await Team.findById(req.params['id'])
             if (!team) { throw Err.teamNotFound }
-            if (!authorizer.team.transfer(req.user, team)) { throw Err.notAuthorized }
+            // if (!authorizer.team.transfer(req.user, team)) { throw Err.notAuthorized }
 
             // change ownership
             if (!req.body.ownerId) { throw Err.missingData }
@@ -187,10 +202,12 @@ module.exports = new Class TeamController {
             if (!newOwner) { throw Err.userNotFound }
             
             let transferred = await memberizer.transferOwnership(newOwner, team)
-            if (!transferred.success) { throw transferred }
+            if (!transferred.success) { throw Err.make(transferred) }
 
-            return { Say.success('team', team, Say.updated) }
+            return Say.success('team', team, Say.updated)
 
         } catch (error) { return Err.make(error) }
     }
 }
+
+module.exports = TeamController

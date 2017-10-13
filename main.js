@@ -33,8 +33,8 @@ const authRouter = require('./routes/authRouter')
 app.use('/authenticate', authRouter)
 
 // authentication middleware
-const authenticator = require('./tools/authenticator')
-app.use(authenticator)
+// const authenticator = require('./tools/authenticator')
+// app.use(authenticator)
 
 // protected routes
 const userRouter = require('./routes/userRouter')
@@ -46,12 +46,12 @@ app.use('/races', raceRouter)
 const teamRouter = require('./routes/teamRouter')
 app.use('/teams', teamRouter)
 
-const resultRouter = require('.routes/resultRouter')
-app.user('/results', resultRouter)
+const resultRouter = require('./routes/resultRouter')
+app.use('/results', resultRouter)
 
 
 // Set up server.
 
 app.listen(process.env.PORT, function () {
-  console.log('Listening on port ', process.env.PORT, '.')
+  console.log('Listening on port ', process.env.PORT, '....')
 })

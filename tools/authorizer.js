@@ -1,7 +1,7 @@
 const registrar = require('./registrar')
 
 // REMEMBER WHICH FUNCTIONS ARE ASYNC: user.register, user.joinTeam, user.leaveTeam, and team.create.
-const authorizor = {
+const Authorizer = {
     user: {
         index: (user) =>                         { user.isMember() },
         create: (user) =>                        { user.isMember() },
@@ -20,7 +20,7 @@ const authorizor = {
         makeMember: (user, userInstance) =>      { user.isAdmin() },
         validSelfAttributes:                     ['email', 'username', 'password', 'firstName', 'lastName', 'bio', 'photo', 'birthdate', 'address', 'city', 'state', 'zip', 'phone'],
         validAdminAttributes:                    ['dateRegistered'],  // createdAt + updatedAt locked, others must be edited through corresponding routes
-        requiredAttributes:                      ['email', 'username', 'password']  // add additional required attributes?
+        requiredAttributes:                      ['email', 'username', 'password', 'role']  // add additional required attributes?
     },
          
     race: {
@@ -63,6 +63,6 @@ const authorizor = {
     }
 }
 
-module.exports = authorizor
+module.exports = Authorizer
 
 // create a method or a route to return an array of required attributes?

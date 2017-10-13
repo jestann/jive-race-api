@@ -1,5 +1,6 @@
 const router = require('express').Router()
-const userController = require('./../controllers/userController')
+const UserController = require('./../controllers/userController')
+const userController = new UserController()
 
 router.get('/', async (req, res) => {
     let data = await userController.index(req)
@@ -42,33 +43,38 @@ router.get('/:id/results', async (req, res) => {
     res.status(data.code).json(data)
 })
 
-router.post('/:id/register', async (req, res) => {
+router.put('/:id/register', async (req, res) => {
     let data = await userController.register(req)
     res.status(data.code).json(data)
 })
 
-router.post('/:id/unregister', async (req, res) => {
+router.put('/:id/unregister', async (req, res) => {
     let data = await userController.unregister(req)
     res.status(data.code).json(data)
 })
 
-router.post('/:id/jointeam', async (req, res) => {
+router.put('/:id/jointeam', async (req, res) => {
     let data = await userController.joinTeam(req)
     res.status(data.code).json(data)
 })
 
-router.post('/:id/leaveteam', async (req, res) => {
+router.put('/:id/leaveteam', async (req, res) => {
     let data = await userController.leaveTeam(req)
     res.status(data.code).json(data)
 })
 
-router.post('/:id/makeadmin', async (req, res) => {
+router.put('/:id/makeadmin', async (req, res) => {
     let data = await userController.makeAdmin(req)
     res.status(data.code).json(data)
 })
 
-router.post('/:id/makemember', async (req, res) => {
+router.put('/:id/makemember', async (req, res) => {
     let data = await userController.makeMember(req)
+    res.status(data.code).json(data)
+})
+
+router.post('/seed', async (req, res) => {
+    let data = await userController.seed(req)
     res.status(data.code).json(data)
 })
 

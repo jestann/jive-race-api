@@ -1,5 +1,6 @@
 const router = require('express').Router()
-const resultController = require('./../controllers/resultController')
+const ResultController = require('./../controllers/resultController')
+const resultController = new ResultController()
 
 router.get('/', async (req, res) => {
     let data = await resultController.index(req)

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
-const ObjectId = mongoose.mongo.ObjectId
+const ObjectId = Schema.Types.ObjectId
 
 const User = './user'
 const Race = './race'
@@ -9,9 +9,9 @@ const Team = './team'
 const resultSchema = new Schema({
     createdAt: Date,
     updatedAt: Date,
-    raceId: ObjectId,
-    teamId: ObjectId,
-    runnerId: ObjectId, // user id of runner
+    raceId: { type: ObjectId, required: true },
+    teamId: { type: ObjectId, required: true },
+    runnerId: { type: ObjectId, required: true }, // user id of runner
     time: Number, // placing will be calculated by race or team
     note: String
 })
