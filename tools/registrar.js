@@ -28,11 +28,12 @@ class Registrar {
         try {
             
             if (user.isRunningRace(race)) {
-                let results = Result.find( {runnerId: user.id })
+                let results = await Result.find( {runnerId: user._id.toString() }) // could fail due to ObjectId equivalency issues
                 if (results.length > 0) { throw Err.editsClosed }
                 
                 for (let i=0; i<user.teams.length; i++) {
-                    let team = await Team.findById(this.teams[i])
+                    let team = await Team.findById(user.teams[i])
+                    if (!team) { throw Err.teamNotFound }
                     if (team.raceId.toString() === race._id.toString()) { throw Err.stillOnTeam }
                 }
 
@@ -41,11 +42,12 @@ class Registrar {
                 race.removeRunner(user)
             }
             
-            return Say.success(Say.removed)
+            return Say.success(Say.unregistered)
         } catch (error) { return Err.make(error) }
     }
     
     // check if a user is current
+    // update this later to mean something more useful, like paid or registered on the site
     async userIsCurrent (user) {
         try {
             let race = await Race.findById(user.currentRaceId)
@@ -54,20 +56,14 @@ class Registrar {
         } catch (error) { return Err.make(error) }
     }
 
-    // NOTE this has mid-level saving which can cause mismatched data, should any errors be thrown post-save
-    
     // inactivates a user, done instead of deleting users, retaining past race data but removing login/authorization and user data
     async inactivateUser (user) {
         try {
-            let currentTeam = await Team.findById(user.currentTeamId)
-            if (currentTeam) {
-                if (user.owns(currentTeam)) { throw Err.transferOwnership }
-                currentTeam.removeMember(user)
-            }
-            
+            let currentTeam = await Team.findById(user.currentTeamId) || null
+            if (currentTeam && user.owns(currentTeam)) { throw Err.transferOwnership }
+            if (currentTeam) { currentTeam.removeMember(user) }
             user.inactivate()
             return Say.success('currentTeam', currentTeam) // hand this back to save in the controller
-            
         } catch (error) { return Err.make(error) }
     }
 }

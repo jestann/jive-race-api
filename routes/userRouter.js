@@ -73,11 +73,6 @@ router.put('/:id/makemember', async (req, res) => {
     res.status(data.code).json(data)
 })
 
-router.post('/seed', async (req, res) => {
-    let data = await userController.seed(req)
-    res.status(data.code).json(data)
-})
-
 // results are added through corresponsing result route
 
 module.exports = router

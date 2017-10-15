@@ -15,22 +15,21 @@ const Team = require('./../models/team').model
 
 class Memberizer {
     // leave team as a member -- won't allow owner to leave a team unless transfer ownership
-    async memberLeaveTeam (user, team) {
+    leaveTeam (user, team) {
         try {
-            if (user.isOnTeam(team) && !user.owns(team)) {
-                user.memberLeaveTeam(team)
-                team.removeMember(user)
-            }
+            if (!user.isOnTeam(team)) { throw Err.notOnTeam }
+            if (user.owns(team)) { throw Err.transferOwnership } // must transfer ownership first
             
-            return Say.success(Say.removed)
-            
+            user.leaveTeam(team)
+            team.removeMember(user)
+            return Say.success(Say.leftTeam)
         } catch (error) { return Err.make(error) }
     }
 
     // join team -- won't allow a team owner to join a new team unless transfer ownership of old team
-    async memberJoinTeam (user, team) {
+    async joinTeam (user, team) {
         try {
-            // check user is current
+            // check user is current -- redundant, adjust this later
             let userIsCurrent = await registrar.userIsCurrent(user)
             if (!userIsCurrent) { throw Err.notCurrent }
             
@@ -39,31 +38,26 @@ class Memberizer {
             if (!race) { throw Err.raceNotFound }
             if (!race.isOpen) { throw Err.notOpen }
             
-            // check user is registered for race
-            if (!user.races.include(race._id)) { throw Err.notCurrent }
+            if (!user.isRunningRace(race)) { throw Err.notRegistered } // must be registered for race
+            if (!user.isCurrentRace(race)) { throw Err.notCurrent } // it must be the user's current race
+            if (user.currentTeamId && !user.isCurrentTeam(team)) { throw Err.alreadyOnTeam } // must leave current team first
 
-            // forces user to leave current team first
-            // if (user.currentTeamId) {
-            //    let currentTeam = await Team.findById(user.currentTeamId)
-            //    if (!currentTeam) { throw Err.teamNotFound }
-            //    let left = await this.memberLeaveTeam(user, currentTeam)
-            //    if (!left.success) { throw left }
-            //}
-            
-            user.memberJoinTeam(team, race)
+            user.joinTeam(team, race)
             team.addMember(user)
 
             return Say.success(Say.joined)
             
         } catch (error) { return Err.make(error) }
     }
-    
+
     // transfer ownership -- leaves old owner as team member, new owner must also be team member
-    async transfer (newOwner, team) {
+    transfer (newOwner, team) {
         try {
-            if (!newOwner.isOnTeam(team)) { throw Err.notOnTeam }
-            team.transferOwnership(newOwner)
-            return Say.success(Say.updated)
+            if (!newOwner.isOnTeam(team)) { throw Err.cantOwn }
+            if (!newOwner.isCurrentTeam(team)) { throw Err.notCurrent } // indirectly prevents owning another team
+            
+            team.transfer(newOwner)
+            return Say.success(Say.transferred)
             
         } catch (error) { return Err.make(error) }
     }

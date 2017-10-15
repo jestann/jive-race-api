@@ -64,43 +64,35 @@ userSchema.methods.isAdmin = function () {
 
 // registered for the current race? user.isCurrent() // this method got moved to memberizer
 // FIXED: what if the last race they registered for isn't current, but one of their races is?
-// can't just use this.array.includes(itemId) because of ObjectId's equivalency issues
+// can't just use this.array.includes(itemId) or .find() because of ObjectId's equivalency issues
+// return ( this.races.find((raceId) => { raceId.toString() === race._id.toString() }) ) doesn't work
 
 userSchema.methods.isRunningRace = function (race) {
     let registered = false
-    this.races.forEach((raceId) => {
-        if (raceId.toString() === race._id.toString()) { registered = true }
+    this.races.forEach((raceId) => { 
+        if (raceId.toString() === race._id.toString()) { registered = true } 
     })
     return registered
 }
 
-userSchema.methods.isRunningRaceId = function (raceId) {
-    let registered = false
-    this.races.forEach((raceItemId) => {
-        if (raceItemId.toString() === raceId.toString()) { registered = true }
-    })
-    return registered
+userSchema.methods.isCurrentRace = function (race) {
+    return (this.currentRaceId.toString() === race._id.toString())
 }
 
 userSchema.methods.isOnTeam = function (team) {
     let memberized = false
-    this.races.forEach((teamId) => {
+    this.teams.forEach((teamId) => {
         if (teamId.toString() === team._id.toString()) { memberized = true }
     })
     return memberized
 }
 
-userSchema.methods.isOnTeamId = function (teamId) {
-    let memberized = false
-    this.races.forEach((teamItemId) => {
-        if (teamItemId.toString() === teamId.toString()) { memberized = true }
-    })
-    return memberized
+userSchema.methods.isCurrentTeam = function (team) {
+    return (this.currentTeamId.toString() === team._id.toString())
 }
 
 userSchema.methods.owns = function (team) {
-    if (team.ownerId.toString() === this._id.toString()) { return true }
-    return false
+    return (team.ownerId.toString() === this._id.toString())
 }
 
 
@@ -114,26 +106,24 @@ userSchema.methods.register = function (race) {
         this.dateRegistered = new Date()
         this.currentTeamId = null
     }
-    
-    // check if already registered -- can't just use this.races.includes(race._id) because of ObjectId's equivalency issues
-    let alreadyRegistered = false
-    this.races.forEach((raceId) => {
-        if (raceId.toString() === race._id.toString())
-        alreadyRegistered = true
-    })
-    if (!alreadyRegistered) { this.races.push(race._id) }
+    if (!this.isRunningRace(race)) { this.races.push(race._id) }
     // also must add runner to race object -- done in registrar
 }
 
 // removes a user from a current or past race
 userSchema.methods.unregister = function (race) {
-    if (this.currentRaceId === race._id) { 
+    if (this.currentRaceId.toString() === race._id.toString()) { 
         this.currentRaceId = null 
         this.dateRegistered = null
         this.currentTeamId = null
     }
-    this.races = this.races.filter((raceId) => {raceId.toString() !== race._id.toString()})
+    this.races = this.races.filter((raceId) => raceId.toString() !== race._id.toString() )
     // also must remove runner from race object -- done in registrar
+}
+
+// resets a user's current team after a user's current race closes -- leaves the user as a team member though
+userSchema.methods.closeRace = function (race) {
+    if (this.currentRaceId.toString() === race._id.toString()) { this.currentTeamId = null }
 }
 
 // this is done instead of deleting users: it disallows authentication and authorization and deletes user data but retains past race data
@@ -161,7 +151,7 @@ userSchema.methods.inactivate = function () {
 // CALLED FROM MEMBERIZER
 
 // leave past or present team as a member -- to leave as an owner, must transfer ownership via team.transfer first
-userSchema.methods.memberLeaveTeam = function (team) {
+userSchema.methods.leaveTeam = function (team) {
     if (!this.owns(team)) {
         if (team._id.toString() === this.currentTeamId.toString()) {
             this.currentTeamId = null
@@ -172,7 +162,7 @@ userSchema.methods.memberLeaveTeam = function (team) {
 }
 
 // join a new team as a member -- only allowed on current race -- checked in memberizer
-userSchema.methods.memberJoinTeam = function (team, race) {
+userSchema.methods.joinTeam = function (team, race) {
     // find out if registered for it -- cannot just use this.races.includes(race._id) because of ObjectId's equivalency issues
     let registered = false
     this.races.forEach((raceId) => {
@@ -185,13 +175,7 @@ userSchema.methods.memberJoinTeam = function (team, race) {
         if ((this.currentRaceId.toString() === race._id.toString()) && !this.currentTeamId) {
             this.currentTeamId = team._id
         }
-        
-        // check if already team member -- cannot just use this.teams.includes(team._id) because of ObjectId's equivalency issues
-        let memberized = false
-        this.teams.forEach((teamId) => {
-            if (teamId.toString() === team._id.toString()) { memberized = true }
-        })
-        if (!memberized) { this.teams.push(team._id) }
+        if (!this.isOnTeam(team)) { this.teams.push(team._id) }
         // allows multiple memberships per past race
         // or can specifically search for and remove past team membership for that race
     }
@@ -212,7 +196,7 @@ userSchema.methods.addResult = function (result) {
 }
 
 userSchema.methods.removeResult = function (result) {
-    this.results = this.results.filter((resultId) => { resultId.toString() !== result._id.toString() })
+    this.results = this.results.filter((resultId) => resultId.toString() !== result._id.toString() )
     // also remove user from result -- done in result controller
 }
 

@@ -39,6 +39,7 @@ raceSchema.methods.open = function () {
 // archive this race
 raceSchema.methods.archive = function () {
     this.isOpen = false
+    // also must raceArchive all its runners, done from raceController's archive function
 }
 
 raceSchema.methods.setCoordinator = function (user) {
@@ -51,7 +52,7 @@ raceSchema.methods.setCoordinator = function (user) {
 // adds a runner
 raceSchema.methods.addRunner = function (user) {
     let registered = false
-    this.runners.forEach((runnerId) {
+    this.runners.forEach((runnerId) => {
         if (runnerId.toString() === user._id.toString()) { registered = true }
     })
     if (!registered) { this.runners.push(user._id) }
@@ -60,7 +61,7 @@ raceSchema.methods.addRunner = function (user) {
 
 // removes a runner
 raceSchema.methods.removeRunner = function (user) {
-    this.runners = this.runners.filter((runnerId) => { runnerId.toString() !== user._id.toString() })
+    this.runners = this.runners.filter((runnerId) => runnerId.toString() !== user._id.toString() )
     // also remove race from runner -- done in registrar
 }
 
@@ -79,7 +80,7 @@ raceSchema.methods.addTeam = function (team) {
 
 // removes a team
 raceSchema.methods.removeTeam = function (team) {
-    this.teams = this.teams.filter((teamId) => { teamId.toString() !== team._id.toString() })
+    this.teams = this.teams.filter((teamId) => teamId.toString() !== team._id.toString() )
     // also remove race from team -- called from team update/delete method
 }
 
@@ -96,7 +97,7 @@ raceSchema.methods.addResult = function (result) {
 }
 
 raceSchema.methods.removeResult = function (result) {
-    this.results = this.results.filter((resultId) => { resultId.toString() !== result._id.toString() })
+    this.results = this.results.filter((resultId) => resultId.toString() !== result._id.toString() )
     // also remove race from result -- done in result controller
 }
 

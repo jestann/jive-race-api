@@ -45,18 +45,14 @@ teamSchema.methods.addMember = function (user) {
 // remove member from team list -- doesn't remove owner
 teamSchema.methods.removeMember = function (user) {
     if (this.ownerId.toString() !== user._id.toString()) {
-        this.members = this.members.filter((memberId) => { memberId.toString() !== user._id.toString() })
+        this.members = this.members.filter((memberId) => memberId.toString() !== user._id.toString() )
     }
     // also remove team from user -- done in memberizer
 }
 
 // transfer ownership -- required to remove owner from a team
-teamSchema.methods.transferOwnership = function (newOwner) {
-    let onTeamAlready = false
-    this.members.forEach((memberId) => {
-        if (memberId.toString() === newOwner._id.toString()) { onTeamAlready = true }
-    })
-    if (onTeamAlready) { this.ownerId = newOwner._id }
+teamSchema.methods.transfer = function (newOwner) {
+    if (newOwner.isOnTeam(this)) { this.ownerId = newOwner._id }
     // retains previous owner as member on team list
     // new owner must be a team member
 }
@@ -66,15 +62,15 @@ teamSchema.methods.transferOwnership = function (newOwner) {
 
 teamSchema.methods.addResult = function (result) {
     let added = false
-    this.results.forEach(resultId) => {
+    this.results.forEach((resultId) => {
         if (resultId.toString() === result._id.toString()) { added = true }
-    }
+    })
     if (!added) { this.results.push(result._id) }
     // also add team to result -- done in result router
 }
 
 teamSchema.methods.removeResult = function (result) {
-    this.results = this.results.filter((resultId) => { resultId.toString() !== result._id.toString() })
+    this.results = this.results.filter((resultId) => resultId.toString() !== result._id.toString() )
     // also remove team from result -- done in result router
 }
 

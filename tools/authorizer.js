@@ -48,7 +48,7 @@ const Authorizer = {
         members: (user, team) =>        { (user.isMember() && user.isOnTeam(team)) || user.isAdmin() },
         results: (user, team) =>        { (user.isMember() && user.isOnTeam(team)) || user.isAdmin() },
         transfer: (user, team) =>       { (user.isMember() && user.owns(team)) || user.isAdmin() },
-        validAttributes:                ['name', 'ownerId', 'description', 'meetingLocation', 'slackChannel'], // raceId + createdAt + updatedAt locked
+        validAttributes:                ['name', 'description', 'meetingLocation', 'slackChannel'], // raceId + createdAt + updatedAt locked, use transfer for ownerId
         requiredAttributes:             ['name', 'ownerId', 'raceId'] // for creation
     },
     

@@ -25,8 +25,8 @@ class RaceController {
         try {
             // if (!authorizer.race.create(req.user)) { throw Err.notAuthorized }
         
-            // add required attributes -- add validation here, checks for required aren't as clean as mine
-            // if (!req.body.year || !req.body.name || !req.body.date) { throw Err.missingData }
+            // add required attributes -- add validation here, their checks for required data aren't as clean as mine
+            if (!req.body.year || !req.body.name || !req.body.date) { throw Err.missingData }
             let newRace = new Race({
                 year: req.body.year,
                 name: req.body.name,
@@ -42,7 +42,7 @@ class RaceController {
             if (req.body.coordinatorId) { 
                 let coordinator = await User.findById(req.body.coordinatorId) 
                 if (!coordinator) { throw Err.userNotFound }
-                newRace.coordinatorId = coordinator.id
+                newRace.coordinatorId = coordinator._id
                 // make this coordinator an admin here?
             }
 
@@ -185,6 +185,12 @@ class RaceController {
             let race = await Race.findById(req.params['id'])
             if (!race) { throw Err.raceNotFound }
             // if (!authorizer.race.archive(req.user, race)) { throw Err.notAuthorized }
+
+            // resets current team to null for all runners for whom this is their current race
+            for (let i=0; i<race.runners.length; i++) {
+                let runner = await User.findById(race.runners[i])
+                runner.closeRace(race)
+            }
 
             // archive and return
             race.archive()

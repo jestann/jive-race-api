@@ -22,41 +22,39 @@ class ResultController {
             // authorize
             // if (!authorizer.result.create(req.user)) { throw Err.notAuthorized }
         
-            // check required attributes -- add validation here
-            // if (!req.body.raceId || !req.body.runnerId || !req.body.time) { throw Err.missingData }
-            let newResult = new Result({
-                time: req.body.time
-            })
+            // check required attributes -- add validation here, their checks for required data aren't as clean as mine
+            if (!req.body.raceId || !req.body.runnerId || !req.body.time) { throw Err.missingData }
             
-            // check if runner already has a result for this race. if not, add result to runner
+            // check to make sure runner doesn't already have a result for this race
             let runner = await User.findById(req.body.runnerId)
             if (!runner) { throw Err.userNotFound }
-            
-            let results = await Result.find({ runnerId: runner.id, raceId: race.id })
+            let results = await Result.find({ runnerId: runner._id.toString(), raceId: race._id.toString() }) // could fail due to ObjectId equivalency issues
             if (results.length > 0) { throw Err.runnerHasResult }
 
-            newResult.runnerId = runner.id
-            runner.addResult(newResult)
-            await runner.save()
-
-            // add result to race
+            // check if runner is registered for that race
             let race = await Race.findById(req.body.raceId)
             if (!race) { throw Err.raceNotFound }
-            newResult.raceId = race.id
-            race.addResult(newResult)
+            if (!runner.isRunningRace(race)) { throw Err.notRegistered }
             
-            // add result to runner's current team
+            // look up the team
             let team = await Team.findById(runner.currentTeamId)
             if (!team) { throw Err.teamNotFound }
-            newResult.teamId = team.id
-            team.addResult(newResult)
             
-            // add additional attributes
+            // add attributes
+            let newResult = new Result({ time: req.body.time })
             if (req.body.note) { newResult.note = req.body.note }
+            newResult.runnerId = runner._id
+            newResult.raceId = race._id
+            newResult.teamId = team.id
+
+            runner.addResult(newResult)
+            race.addResult(newResult)
+            team.addResult(newResult)
 
             await newResult.save() 
             await race.save()
             await team.save()
+            await runner.save()
             return Say.success('result', newResult, Say.created)
             
         } catch (error) { return Err.make(error) }
@@ -80,7 +78,7 @@ class ResultController {
             // if (!authorizer.result.update(req.user, result)) { throw Err.notAuthorized }
             
             // does not allow updating of raceId, teamId, or runnerId -- delete result and re-enter if needed
-            
+
             // update attributes -- add validation here
             for (let attribute in req.body) {
                 if (authorizer.result.validAttributes.includes(attribute)) {
@@ -104,19 +102,20 @@ class ResultController {
             // delete from all models 
             let race = await Race.findById(result.raceId)
             if (!race) { throw Err.raceNotFound }
-            race.removeResult(result)
             
             let team = await Team.findById(result.teamId)
             if (!team) { throw Err.teamNotFound }
-            team.removeResult(result)
             
             let runner = await User.findById(result.runnerId)
             if (!runner) { throw Err.userNotFound }
+
+            race.removeResult(result)
+            team.removeResult(result)
             runner.removeResult(result)
-            
             await race.save()
             await team.save()
             await runner.save()
+
             await result.remove()
             return Say.success(Say.destroyed)
             

@@ -4,12 +4,14 @@ module.exports = {
     updated:        "Updated successfully.",
     destroyed:      "Deleted successfully.",
     registered:     "Registered successfully.",
+    unregistered:   "Unregistered successfully.",
     joined:         "Joined successfully.",
     leftTeam:       "Left team successfully.",
+    transferred:    "Ownership transferred successfully.",
     added:          "Added successfully.",
     removed:        "Removed successfully.",
     opened:         "Race opened for registration.",
-    archived:       "Race closed for registration.",
+    archived:       "Race closed for registration and all current teams reset for its runners.",
     inactivated:    "User inactivated successfully.",
     success:        (dataName=null, data=null, message=null) => { 
         let result = { success: true, code: 200 }

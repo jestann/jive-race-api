@@ -19,42 +19,6 @@ const Team = require('./../models/team').model
 const Result = require('./../models/result').model
 
 class UserController {
-    async seed (req) {
-        try {
-            let newUser = new User({
-                email: req.body.email,
-                username: req.body.username,
-                password: req.body.password,
-                role: 'member'
-            })
-            await newUser.save()
-            
-            let newRace = new Race({
-                year: req.body.year,
-                name: req.body.raceName,
-                date: req.body.date
-            })
-            await newRace.save()
-            
-            let newTeam = new Team({
-                ownerId: newUser._id,
-                raceId: newRace._id,
-                name: req.body.teamName
-            })
-            await newTeam.save()
-            
-            let newResult = new Result({
-                runnerId: newUser._id,
-                raceId: newRace._id,
-                teamId: newTeam._id,
-                time: req.body.time
-            })
-            await newResult.save()
-            
-            return Say.success('[user, race, team, result]', [newUser, newRace, newTeam, newResult])
-        } catch (error) { return Err.make(error) }
-    }
-    
     async index (req) {
         try {
             // if (!authorizer.user.index(req.user)) { throw Err.notAuthorized }
@@ -69,8 +33,8 @@ class UserController {
         try {
             // if (!authorizer.user.create(req.user)) { throw Err.notAuthorized }
         
-            // add required attributes -- add validation here, checks for required aren't as clean as mine
-            // if (!req.body.email || !req.body.username || !req.body.password) { throw Err.missingData }
+            // add required attributes -- add validation here, their checks for required data aren't as clean as mine
+            if (!req.body.email || !req.body.username || !req.body.password) { throw Err.missingData }
             let passwordHash = await bcrypt.hash(req.body.password, 10)
 
             // create and save
@@ -140,7 +104,7 @@ class UserController {
             let inactivated = await registrar.inactivateUser(userInstance)
             if (!inactivated.success) { throw Err.make(inactivated) }
 
-            await inactivated.currentTeam.save()
+            if (inactivated.currentTeam) { await inactivated.currentTeam.save() }
             await userInstance.save()
             return Say.success(Say.destroyed)
 
@@ -224,7 +188,7 @@ class UserController {
             
             await race.save()
             await userInstance.save()
-            return Say.success('user', userInstance, Say.registered)
+            return Say.success('[user, race]', [userInstance, race], Say.registered)
 
         } catch (error) { return Err.make(error) }
     }
@@ -238,12 +202,13 @@ class UserController {
 
             let race = await Race.findById(req.body.raceId)
             if (!race) { throw Err.raceNotFound }
+            
             let unregistered = await registrar.unregister(userInstance, race)
             if (!unregistered.success) { throw Err.make(unregistered) }
             
             await race.save()
             await userInstance.save()
-            return Say.success('user', userInstance, Say.unregistered)
+            return Say.success('[user, race]', [userInstance, race], Say.unregistered)
 
         } catch (error) { return Err.make(error) }
     }
@@ -259,17 +224,12 @@ class UserController {
             let team = await Team.findById(req.body.teamId)
             if (!team) { throw Err.teamNotFound }
             
-            // check if userInstance already owns a team
-            let currentTeam = Team.findById(userInstance.currentTeamId)
-            if (userInstance.owns(currentTeam)) { throw Err.transferOwnership }
-            
-            // if not, join team
-            let joined = await memberizer.memberJoinTeam(userInstance, team)
+            let joined = await memberizer.joinTeam(userInstance, team)
             if (!joined.success) { throw Err.make(joined) }
             
             await team.save()
             await userInstance.save()
-            return Say.success('user', userInstance, Say.joined)
+            return Say.success('[user, team]', [userInstance, team], Say.joined)
 
         } catch (error) { return Err.make(error) }
     }
@@ -285,16 +245,12 @@ class UserController {
             let team = await Team.findById(req.body.teamId)
             if (!team) { throw Err.teamNotFound }
             
-            // check if userInstance owns the team
-            if (userInstance.owns(team)) { throw Err.transferOwnership }
-            
-            // if not, leave team
-            let left = await memberizer.memberLeaveTeam(userInstance, team)
+            let left = memberizer.leaveTeam(userInstance, team) // not async
             if (!left.success) { throw Err.make(left) }
 
             await team.save()
             await userInstance.save()
-            return Say.success('user', userInstance, Say.leftTeam)
+            return Say.success('[user, team]', [userInstance, team], Say.leftTeam)
 
         } catch (error) { return Err.make(error) }
     }
