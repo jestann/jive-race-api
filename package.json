@@ -1,14 +1,14 @@
 {
   "name": "workspace",
   "version": "1.0.0",
-  "description": "Web app for a race built on Express, React, and Mongoose",
+  "description": "Race app back end built on Express and Mongoose",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jestann/not-sad-race.git"
+    "url": "git+https://github.com/jestann/race-back-end.git"
   },
   "author": "jestann",
   "license": "ISC",
