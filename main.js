@@ -50,6 +50,7 @@ const resultRouter = require('./routes/resultRouter')
 app.use('/results', resultRouter)
 
 // for authorizing presence of visual elements
+// how should this be authenticated?
 const authTestRouter = require('./routes/authTestRouter')
 app.use('authtest', authTestRouter)
 
