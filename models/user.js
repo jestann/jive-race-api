@@ -13,9 +13,9 @@ const userSchema = new Schema({
     createdAt: Date,
     updatedAt: Date,
     inactivatedAt: Date,
-    email: { type: String, required: true, unique: true },
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    email: { type: String, required: true, unique: true }, // only contact info saved when inactivating users
+    username: { type: String, unique: true }, // not required in mongoose to allow for inactivating users
+    password: { type: String }, // not required in mongoose to allow for inactivating users
     role: { type: String, required: true, default: 'member' }, // three roles currently available 'member' and 'admin' + 'inactive'
     firstName: String,
     lastName: String,

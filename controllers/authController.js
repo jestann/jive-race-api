@@ -1,8 +1,8 @@
+const Err = require('./../config/error')
+const Say = require('./../config/message')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const config = require('./../config/config')
-const Err = require('./../config/error')
-const Say = require('./../config/message')
 const User = require('./../models/user').model
 
 class AuthController {
