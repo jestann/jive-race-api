@@ -1,9 +1,6 @@
-const mongoose = require('mongoose')
-const ObjectId = mongoose.mongo.ObjectId
-
-const authorizer = require('./../tools/authorizer')
 const Err = require('./../config/error')
 const Say = require('./../config/message')
+const authorizer = require('./../tools/authorizer')
 
 const User = require('./../models/user').model
 const Race = require('./../models/race').model
@@ -72,18 +69,11 @@ class RaceController {
             
             // update attributes -- add validation here
             for (let attribute in req.body) {
-                if (authorizer.race.validAttributes.includes(attribute) && attribute !== 'coordinatorId') {
+                if (authorizer.race.validAttributes.includes(attribute)) {
                     race[attribute] = req.body[attribute]
                 }
             }
-            
-            // handle coordinator separately
-            if (req.body.coordinatorId) {
-                let coordinator = await User.findById(req.body.coordinatorId) 
-                if (!coordinator) { throw Err.userNotFound }
-                race.coordinatorId = coordinator._id
-            }
-            
+
             await race.save()
             return Say.success('race', race, Say.updated)
             
@@ -186,15 +176,19 @@ class RaceController {
             if (!race) { throw Err.raceNotFound }
             // if (!authorizer.race.archive(req.user, race)) { throw Err.notAuthorized }
 
+            // archive and save
+            race.archive()
+            await race.save()
+
             // resets current team to null for all runners for whom this is their current race
             for (let i=0; i<race.runners.length; i++) {
                 let runner = await User.findById(race.runners[i])
-                runner.closeRace(race)
+                if (runner.currentTeamId) { 
+                    runner.closeRace(race)
+                    await runner.save()
+                }
             }
 
-            // archive and return
-            race.archive()
-            await race.save()
             return Say.success('race', race, Say.archived)
 
         } catch (error) { return Err.make(error) }

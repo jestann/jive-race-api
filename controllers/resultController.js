@@ -28,24 +28,24 @@ class ResultController {
             // check to make sure runner doesn't already have a result for this race
             let runner = await User.findById(req.body.runnerId)
             if (!runner) { throw Err.userNotFound }
-            let results = await Result.find({ runnerId: runner._id.toString(), raceId: race._id.toString() }) // could fail due to ObjectId equivalency issues
-            if (results.length > 0) { throw Err.runnerHasResult }
-
+            
             // check if runner is registered for that race
             let race = await Race.findById(req.body.raceId)
             if (!race) { throw Err.raceNotFound }
             if (!runner.isRunningRace(race)) { throw Err.notRegistered }
-            
-            // look up the team
+
+            let results = await Result.find({ runnerId: runner._id.toString(), raceId: race._id.toString() }) // could fail due to ObjectId equivalency issues
+            if (results.length > 0) { throw Err.runnerHasResult }
+
             let team = await Team.findById(runner.currentTeamId)
             if (!team) { throw Err.teamNotFound }
-            
+
             // add attributes
             let newResult = new Result({ time: req.body.time })
             if (req.body.note) { newResult.note = req.body.note }
             newResult.runnerId = runner._id
             newResult.raceId = race._id
-            newResult.teamId = team.id
+            newResult.teamId = team._id
 
             runner.addResult(newResult)
             race.addResult(newResult)

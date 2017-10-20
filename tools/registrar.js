@@ -57,7 +57,7 @@ class Registrar {
     }
 
     // inactivates a user, done instead of deleting users, retaining past race data but removing login/authorization and user data
-    async inactivateUser (user) {
+    async inactivate (user) {
         try {
             let currentTeam = await Team.findById(user.currentTeamId) || null
             if (currentTeam && user.owns(currentTeam)) { throw Err.transferOwnership }

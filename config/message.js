@@ -11,7 +11,7 @@ module.exports = {
     added:          "Added successfully.",
     removed:        "Removed successfully.",
     opened:         "Race opened for registration.",
-    archived:       "Race closed for registration and all current teams reset for its runners.",
+    archived:       "Race closed for registration and current team reset for all its runners.",
     inactivated:    "User inactivated successfully.",
     success:        (dataName=null, data=null, message=null) => { 
         let result = { success: true, code: 200 }

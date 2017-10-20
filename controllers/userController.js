@@ -1,17 +1,13 @@
-const mongoose = require('mongoose')
-const ObjectId = mongoose.mongo.ObjectId
+const Err = require('./../config/error')
+const Say = require('./../config/message')
 
 const bcrypt = require('bcrypt')
 const validator = require('validator')
 const authorizer = require('./../tools/authorizer')
-
 const Registrar = require('./../tools/registrar')
 const registrar = new Registrar()
 const Memberizer = require('./../tools/memberizer')
 const memberizer = new Memberizer()
-
-const Err = require('./../config/error')
-const Say = require('./../config/message')
 
 const User = require('./../models/user').model
 const Race = require('./../models/race').model
@@ -80,12 +76,12 @@ class UserController {
             // handle password separately
             if (req.body.password) { userInstance.password = await bcrypt.hash(req.body.password, 10) }
 
-            // administrative updates if allowed
+            /* administrative updates if allowed
             if (authorizer.user.updateAdmin(req.user, userInstance)) {
                 for (let attribute in req.body) {
                     if (authorizer.user.validAdminAttributes.includes(attribute)) { userInstance[attribute] = req.body[attribute] }
                 }
-            }
+            } */
 
             await userInstance.save()
             return Say.success('user', userInstance, Say.updated)
@@ -101,7 +97,7 @@ class UserController {
             // if (!authorizer.user.destroy(req.user, userInstance)) { throw Err.notAuthorized }
 
             // inactivate and return success
-            let inactivated = await registrar.inactivateUser(userInstance)
+            let inactivated = await registrar.inactivate(userInstance)
             if (!inactivated.success) { throw Err.make(inactivated) }
 
             if (inactivated.currentTeam) { await inactivated.currentTeam.save() }

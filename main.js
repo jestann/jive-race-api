@@ -49,6 +49,10 @@ app.use('/teams', teamRouter)
 const resultRouter = require('./routes/resultRouter')
 app.use('/results', resultRouter)
 
+// for authorizing presence of visual elements
+const authTestRouter = require('./routes/authTestRouter')
+app.use('authtest', authTestRouter)
+
 
 // Set up server.
 

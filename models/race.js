@@ -39,7 +39,7 @@ raceSchema.methods.open = function () {
 // archive this race
 raceSchema.methods.archive = function () {
     this.isOpen = false
-    // also must raceArchive all its runners, done from raceController's archive function
+    // also must closeRace() for all its runners, done from raceController's archive function
 }
 
 raceSchema.methods.setCoordinator = function (user) {

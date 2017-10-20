@@ -1,12 +1,9 @@
-const mongoose = require('mongoose')
-const ObjectId = mongoose.mongo.ObjectId
-const authorizer = require('./../tools/authorizer')
-
-const Memberizer = require('./../tools/memberizer')
-const memberizer = new Memberizer()
-
 const Err = require('./../config/error')
 const Say = require('./../config/message')
+
+const authorizer = require('./../tools/authorizer')
+const Memberizer = require('./../tools/memberizer')
+const memberizer = new Memberizer()
 
 const User = require('./../models/user').model
 const Race = require('./../models/race').model
@@ -47,7 +44,7 @@ class TeamController {
             // check if can join owner
             let owner = await User.findById(req.body.ownerId)
             if (!owner) { throw Err.userNotFound }
-            let joined = await this.joinTeam(owner, newTeam)
+            let joined = await memberizer.joinTeam(owner, newTeam)
             if (!joined.success) { throw Err.make(joined) }
             newTeam.ownerId = owner._id
 

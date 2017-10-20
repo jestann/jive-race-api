@@ -9,7 +9,7 @@ module.exports = {
     itemNotFound:       { code: 400, body: "Item not found." },
     missingData:        { code: 400, body: "Missing required data." },
     alreadyOnTeam:      { code: 400, body: "Already on team. Leave the current team first." },
-    transferOwnership:  { code: 400, body: "Transfer ownership for this team before creating a new team." },
+    transferOwnership:  { code: 400, body: "Transfer ownership for this team before leaving team or creating or joining a new team." },
     stillContainsData:  { code: 400, body: "Cannot delete item. Still contains linked data." },
     notOpen:            { code: 400, body: "Race not open for registration." },
     notCurrent:         { code: 400, body: "User not registered for current race." },
@@ -19,6 +19,7 @@ module.exports = {
     notOnTeam:          { code: 400, body: "User is not on team." },
     cantOwn:            { code: 400, body: "User must join team first before being made owner." },
     runnerHasResult:    { code: 400, body: "Runner already has a result entered for this race." },
+    authTestError:      { code: 400, body: "Couldn't retrieve that authorization information." },
     defaultErr:         { code: 500, body: "Error." },
     make:               (error) => { return { success: false, code: error.code || 500, error: error.body || error.error || error } }
 }
