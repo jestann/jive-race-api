@@ -7,7 +7,6 @@ const Team = require('./../models/team').model
 const Result = require('./../models/result').model
 
 // no saving in this class to prevent persisting data before errors are thrown
-// EXCEPTION! inactivate user saves team and user data
 
 class Registrar {
     
@@ -45,16 +44,6 @@ class Registrar {
             return Say.success(Say.unregistered)
         } catch (error) { return Err.make(error) }
     }
-    
-    // check if a user is current
-    // update this later to mean something more useful, like paid or registered on the site
-    async userIsCurrent (user) {
-        try {
-            let race = await Race.findById(user.currentRaceId)
-            if (race) { return race.isOpen }
-            return false
-        } catch (error) { return Err.make(error) }
-    }
 
     // inactivates a user, done instead of deleting users, retaining past race data but removing login/authorization and user data
     async inactivate (user) {
@@ -62,7 +51,9 @@ class Registrar {
             let currentTeam = await Team.findById(user.currentTeamId) || null
             if (currentTeam && user.owns(currentTeam)) { throw Err.transferOwnership }
             if (currentTeam) { currentTeam.removeMember(user) }
+            
             user.inactivate()
+            
             return Say.success('currentTeam', currentTeam) // hand this back to save in the controller
         } catch (error) { return Err.make(error) }
     }

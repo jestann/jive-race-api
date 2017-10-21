@@ -10,7 +10,7 @@ const Result = require('./../models/result').model
 class ResultController {
     async index (req) {
         try {
-            // if (!authorizer.result.index(req.user)) { throw Err.notAuthorized }
+            if (!authorizer.result.index(req.user)) { throw Err.notAuthorized }
             let results = await Result.find({})
             return Say.success('results', results)
             
@@ -20,7 +20,7 @@ class ResultController {
     async create (req) {
         try {
             // authorize
-            // if (!authorizer.result.create(req.user)) { throw Err.notAuthorized }
+            if (!authorizer.result.create(req.user)) { throw Err.notAuthorized }
         
             // check required attributes -- add validation here, their checks for required data aren't as clean as mine
             if (!req.body.raceId || !req.body.runnerId || !req.body.time) { throw Err.missingData }
@@ -64,7 +64,7 @@ class ResultController {
         try {
             let result = await Result.findById(req.params['id'])
             if (!result) { throw Err.itemNotFound }
-            // if (!authorizer.result.show(req.user, result)) { throw Err.notAuthorized }
+            if (!authorizer.result.show(req.user, result)) { throw Err.notAuthorized }
             return Say.success('result', result)
             
         } catch (error) { return Err.make(error) }
@@ -75,7 +75,7 @@ class ResultController {
             // authorize
             let result = await Result.findById(req.params['id'])
             if (!result) { throw Err.itemNotFound }
-            // if (!authorizer.result.update(req.user, result)) { throw Err.notAuthorized }
+            if (!authorizer.result.update(req.user, result)) { throw Err.notAuthorized }
             
             // does not allow updating of raceId, teamId, or runnerId -- delete result and re-enter if needed
 
@@ -97,7 +97,7 @@ class ResultController {
             // authorize
             let result = await Result.findById(req.params['id'])
             if (!result) { throw Err.itemNotFound }
-            // if (!authorizer.result.destroy(req.user, result)) { throw Err.notAuthorized }
+            if (!authorizer.result.destroy(req.user, result)) { throw Err.notAuthorized }
 
             // delete from all models 
             let race = await Race.findById(result.raceId)

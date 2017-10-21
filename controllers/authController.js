@@ -17,7 +17,7 @@ class AuthController {
                 password: passwordHash,
                 role: 'member'
             })
-            await newUser.save() // handles validation errors terribly
+            await newUser.save() // handles validation and save errors terribly
 
             // get a token for the new user
             let token = await jwt.sign({ id: newUser._id.toString() }, config.secret, { expiresIn: '1h' })

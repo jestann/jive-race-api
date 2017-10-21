@@ -9,14 +9,14 @@ const Result = './result'
 const Err = './../config/error'
 
 const userSchema = new Schema({
-    // _id gives object, .id gives string
+    // _id gives ObjectId
     createdAt: Date,
     updatedAt: Date,
     inactivatedAt: Date,
     email: { type: String, required: true, unique: true }, // only contact info saved when inactivating users
     username: { type: String, unique: true }, // not required in mongoose to allow for inactivating users
     password: { type: String }, // not required in mongoose to allow for inactivating users
-    role: { type: String, required: true, default: 'member' }, // three roles currently available 'member' and 'admin' + 'inactive'
+    role: { type: String, required: true, default: 'member' }, // three roles currently available: 'member' 'admin' and 'inactive'
     firstName: String,
     lastName: String,
     bio: String,
@@ -30,6 +30,7 @@ const userSchema = new Schema({
     races: [ObjectId], // array of race ids
     teams: [ObjectId], // array of team ids
     results: [ObjectId], // array of result ids
+    isCurrent: Boolean, // if paid to register for a currently open race
     currentRaceId: { type: ObjectId, default: null }, // id of last race registered
     dateRegistered: Date, // date last registered
     currentTeamId: { type: ObjectId, default: null } // id of current team
@@ -62,10 +63,16 @@ userSchema.methods.isAdmin = function () {
     return false
 }
 
-// registered for the current race? user.isCurrent() // this method got moved to memberizer
-// FIXED: what if the last race they registered for isn't current, but one of their races is?
-// can't just use this.array.includes(itemId) or .find() because of ObjectId's equivalency issues
-// return ( this.races.find((raceId) => { raceId.toString() === race._id.toString() }) ) doesn't work
+userSchema.methods.isActive = function () {
+    if (this.role !== 'inactive') { return true }
+    return false
+}
+
+// used in authorizor, also checks to make sure the user has not been "deleted" or made inactive
+userSchema.methods.isSelf = function (user) {
+    if ((this._id.toString() === user._id.toString()) && this.isActive()) { return true }
+    return false
+}
 
 userSchema.methods.isRunningRace = function (race) {
     let registered = false
@@ -77,6 +84,10 @@ userSchema.methods.isRunningRace = function (race) {
 
 userSchema.methods.isCurrentRace = function (race) {
     return (this.currentRaceId.toString() === race._id.toString())
+}
+
+userSchema.methods.isCurrentRaceOfTeam = function (team) {
+    return (this.currentRaceId.toString() === team.raceId.toString())
 }
 
 userSchema.methods.isOnTeam = function (team) {
@@ -92,8 +103,14 @@ userSchema.methods.isCurrentTeam = function (team) {
 }
 
 userSchema.methods.owns = function (team) {
-    return (team.ownerId.toString() === this._id.toString())
+    return (this._id.toString() === team.ownerId.toString())
 }
+
+userSchema.methods.ownsResult = function (result) {
+    return (this._id.toString() === result.runnerId.toString())
+}
+
+// compare strings because of ObjectId's equivalency issues
 
 
 
@@ -105,6 +122,7 @@ userSchema.methods.register = function (race) {
         this.currentRaceId = race._id
         this.dateRegistered = new Date()
         this.currentTeamId = null
+        this.isCurrent = true
     }
     if (!this.isRunningRace(race)) { this.races.push(race._id) }
     // also must add runner to race object -- done in registrar
@@ -116,6 +134,7 @@ userSchema.methods.unregister = function (race) {
         this.currentRaceId = null 
         this.dateRegistered = null
         this.currentTeamId = null
+        this.isCurrent = false
     }
     this.races = this.races.filter((raceId) => raceId.toString() !== race._id.toString() )
     // also must remove runner from race object -- done in registrar
@@ -123,7 +142,12 @@ userSchema.methods.unregister = function (race) {
 
 // resets a user's current team after a user's current race closes -- leaves the user as a team member though
 userSchema.methods.closeRace = function (race) {
-    if (this.currentRaceId.toString() === race._id.toString()) { this.currentTeamId = null }
+    if (this.isCurrentRace(race)) { 
+        // remove current race?
+        // remove date registered?
+        this.currentTeamId = null 
+        this.isCurrent = false
+    }
 }
 
 // this is done instead of deleting users: it disallows authentication and authorization and deletes user data but retains past race data
@@ -141,6 +165,7 @@ userSchema.methods.inactivate = function () {
     this.state = null
     this.zip = null
     this.phone = null
+    this.isCurrent = false
     this.currentRaceId = null
     this.currentTeamId = null
     // would also need to remove them from their current team list -- done in registrar

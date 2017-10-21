@@ -11,7 +11,7 @@ const User = require('./../models/user').model
 const Race = require('./../models/race').model
 const Team = require('./../models/team').model
 
-// no saving in this class, to avoid saving data prior to errors being thrown
+// no saving in this class, to avoid persisting data prior to errors being thrown
 
 class Memberizer {
     // leave team as a member -- won't allow owner to leave a team unless transfer ownership

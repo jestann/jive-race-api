@@ -13,9 +13,11 @@ const Result = require('./../models/result').model
 class TeamController {
     async index (req) {
         try {
-            // if (!authorizer.team.index(req.user)) { throw Err.notAuthorized }
+            // authorize and query
+            if (!authorizer.team.index(req.user)) { throw Err.notAuthorized }
             let teams = await Team.find({})
             if (!teams) { throw Err.teamNotFound }
+            
             return Say.success('teams', teams)
             
         } catch (error) { return Err.make(error) }
@@ -23,8 +25,8 @@ class TeamController {
 
     async create (req) {
         try {
-            // let authorized = await authorizer.team.create(req.user)
-            // if (!authorized) { throw Err.notAuthorized }
+            // authorize
+            if (!authorizer.team.create(req.user)) { throw Err.notAuthorized }
         
             // check required attributes -- add validation here, their checks for required data aren't as clean as mine
             if (!req.body.name || !req.body.raceId || !req.body.ownerId) { throw Err.missingData }
@@ -59,9 +61,10 @@ class TeamController {
     
     async show (req) {
         try {
+            // authorize and query
             let team = await Team.findById(req.params['id'])
             if (!team) { throw Err.teamNotFound }
-            // if (!authorizer.team.show(req.user, team)) { throw Err.notAuthorized }
+            if (!authorizer.team.show(req.user, team)) { throw Err.notAuthorized }
             
             return Say.success('team', team)
             
@@ -73,7 +76,7 @@ class TeamController {
             // authorize
             let team = await Team.findById(req.params['id'])
             if (!team) { throw Err.teamNotFound }
-            // if (!authorizer.team.update(req.user, team)) { throw Err.notAuthorized }
+            if (!authorizer.team.update(req.user, team)) { throw Err.notAuthorized }
             
             // update attributes -- add validation here
             for (let attribute in req.body) {
@@ -95,7 +98,7 @@ class TeamController {
             // authorize
             let team = await Team.findById(req.params['id'])
             if (!team) { throw Err.teamNotFound }
-            // if (!authorizer.team.destroy(req.user, team)) { throw Err.notAuthorized }
+            if (!authorizer.team.destroy(req.user, team)) { throw Err.notAuthorized }
             
             // only allowed if team has no results and no members (except owner)
             if (team.results.length > 0 || team.members.length > 1) { throw Err.editsClosed }
@@ -117,7 +120,7 @@ class TeamController {
             // authorize
             let team = await Team.findById(req.params['id'])
             if (!team) { throw Err.teamNotFound }
-            // if (!authorizer.team.members(req.user, team)) { throw Err.notAuthorized }
+            if (!authorizer.team.members(req.user, team)) { throw Err.notAuthorized }
             
             // query and return
             let members = []
@@ -136,7 +139,7 @@ class TeamController {
             // authorize
             let team = await Team.findById(req.params['id'])
             if (!team) { throw Err.teamNotFound }
-            // if (!authorizer.team.results(req.user, team)) { throw Err.notAuthorized }
+            if (!authorizer.team.results(req.user, team)) { throw Err.notAuthorized }
             
             // query and return success
             let results = []
@@ -155,7 +158,7 @@ class TeamController {
             // authorize
             let team = await Team.findById(req.params['id'])
             if (!team) { throw Err.teamNotFound }
-            // if (!authorizer.team.transfer(req.user, team)) { throw Err.notAuthorized }
+            if (!authorizer.team.transfer(req.user, team)) { throw Err.notAuthorized }
 
             // find owner
             if (!req.body.ownerId) { throw Err.missingData }

@@ -17,7 +17,7 @@ const Result = require('./../models/result').model
 class UserController {
     async index (req) {
         try {
-            // if (!authorizer.user.index(req.user)) { throw Err.notAuthorized }
+            if (!authorizer.user.index(req.user)) { throw Err.notAuthorized }
             let users = await User.find({})
             if (!users) { throw Err.userNotFound }
             return Say.success('users', users)
@@ -27,7 +27,7 @@ class UserController {
 
     async create (req) {
         try {
-            // if (!authorizer.user.create(req.user)) { throw Err.notAuthorized }
+            if (!authorizer.user.create(req.user)) { throw Err.notAuthorized }
         
             // add required attributes -- add validation here, their checks for required data aren't as clean as mine
             if (!req.body.email || !req.body.username || !req.body.password) { throw Err.missingData }
@@ -52,7 +52,7 @@ class UserController {
             // authorize
             let userInstance = await User.findById(req.params['id'])
             if (!userInstance) { throw Err.userNotFound }
-            // if (!authorizer.user.show(req.user, userInstance)) { throw Err.notAuthorized }
+            if (!authorizer.user.show(req.user, userInstance)) { throw Err.notAuthorized }
             
             // return instance
             return Say.success('user', userInstance)
@@ -65,7 +65,7 @@ class UserController {
             // authorize
             let userInstance = await User.findById(req.params['id'])
             if (!userInstance) { throw Err.userNotFound }
-            // if (!authorizer.user.updateSelf(req.user, userInstance)) { throw Err.notAuthorized }
+            if (!authorizer.user.updateSelf(req.user, userInstance)) { throw Err.notAuthorized }
             
             // update attributes -- add validation here -- also add check for required attributes
             for (let attribute in req.body) {
@@ -76,12 +76,12 @@ class UserController {
             // handle password separately
             if (req.body.password) { userInstance.password = await bcrypt.hash(req.body.password, 10) }
 
-            /* administrative updates if allowed
+            // administrative updates if allowed
             if (authorizer.user.updateAdmin(req.user, userInstance)) {
                 for (let attribute in req.body) {
                     if (authorizer.user.validAdminAttributes.includes(attribute)) { userInstance[attribute] = req.body[attribute] }
                 }
-            } */
+            }
 
             await userInstance.save()
             return Say.success('user', userInstance, Say.updated)
@@ -94,7 +94,7 @@ class UserController {
             // authorize
             let userInstance = await User.findById(req.params['id'])
             if (!userInstance) { throw Err.userNotFound }
-            // if (!authorizer.user.destroy(req.user, userInstance)) { throw Err.notAuthorized }
+            if (!authorizer.user.destroy(req.user, userInstance)) { throw Err.notAuthorized }
 
             // inactivate and return success
             let inactivated = await registrar.inactivate(userInstance)
@@ -112,7 +112,7 @@ class UserController {
             // authorize
             let userInstance = await User.findById(req.params['id'])
             if (!userInstance) { throw Err.userNotFound }
-            // if (!authorizer.user.races(req.user, userInstance)) { throw Err.notAuthorized }
+            if (!authorizer.user.races(req.user, userInstance)) { throw Err.notAuthorized }
             
             // query and return
             let races = []
@@ -131,7 +131,7 @@ class UserController {
             // authorize
             let userInstance = await User.findById(req.params['id'])
             if (!userInstance) { throw Err.userNotFound }
-            // if (!authorizer.user.teams(req.user, userInstance)) { throw Err.notAuthorized }
+            if (!authorizer.user.teams(req.user, userInstance)) { throw Err.notAuthorized }
             
             // query and return
             let teams = []
@@ -150,7 +150,7 @@ class UserController {
             // authorize
             let userInstance = await User.findById(req.params['id'])
             if (!userInstance) { throw Err.userNotFound }
-            // if (!authorizer.user.results(req.user, userInstance)) { throw Err.notAuthorized }
+            if (!authorizer.user.results(req.user, userInstance)) { throw Err.notAuthorized }
             
             // query and return success
             let results = []
@@ -169,8 +169,7 @@ class UserController {
             // authorize
             let userInstance = await User.findById(req.params['id'])
             if (!userInstance) { throw Err.userNotFound }
-            // let authorized = await authorizer.user.register(req.user, userInstance)
-            // if (!authorized) { throw Err.notAuthorized }
+            if (!authorizer.user.register(req.user, userInstance)) { throw Err.notAuthorized }
 
             // payment will be taken care of prior to this step
             // it will be handled through a separate payment controller before this route is called
@@ -194,7 +193,7 @@ class UserController {
             // authorize
             let userInstance = await User.findById(req.params['id'])
             if (!userInstance) { throw Err.userNotFound }
-            // if (!authorizer.user.unregister(req.user, userInstance)) { throw Err.notAuthorized }
+            if (!authorizer.user.unregister(req.user, userInstance)) { throw Err.notAuthorized }
 
             let race = await Race.findById(req.body.raceId)
             if (!race) { throw Err.raceNotFound }
@@ -214,8 +213,7 @@ class UserController {
             // authorize
             let userInstance = await User.findById(req.params['id'])
             if (!userInstance) { throw Err.userNotFound }
-            // let authorized = await authorizer.user.joinTeam(req.user, userInstance)
-            // if (!authorized) { throw Err.notAuthorized }
+            if (!authorizer.user.joinTeam(req.user, userInstance)) { throw Err.notAuthorized }
 
             let team = await Team.findById(req.body.teamId)
             if (!team) { throw Err.teamNotFound }
@@ -235,8 +233,7 @@ class UserController {
             // authorize
             let userInstance = await User.findById(req.params['id'])
             if (!userInstance) { throw Err.userNotFound }
-            // let authorized = await authorizer.user.leaveTeam(req.user, userInstance)
-            // if (!authorized) { throw Err.notAuthorized }
+            if (!authorizer.user.leaveTeam(req.user, userInstance)) { throw Err.notAuthorized }
 
             let team = await Team.findById(req.body.teamId)
             if (!team) { throw Err.teamNotFound }
@@ -255,7 +252,7 @@ class UserController {
         try {
             let userInstance = await User.findById(req.params['id'])
             if (!userInstance) { throw Err.userNotFound }
-            // if (!authorizer.user.makeAdmin(req.user, userInstance)) { throw Err.notAuthorized }
+            if (!authorizer.user.makeAdmin(req.user, userInstance)) { throw Err.notAuthorized }
             
             userInstance.makeAdmin()
             await userInstance.save()
@@ -268,7 +265,7 @@ class UserController {
         try {
             let userInstance = await User.findById(req.params['id'])
             if (!userInstance) { throw Err.userNotFound }
-            // if (!authorizer.user.makeMember(req.user, userInstance)) { throw Err.notAuthorized }
+            if (!authorizer.user.makeMember(req.user, userInstance)) { throw Err.notAuthorized }
             
             userInstance.makeMember()
             await userInstance.save()

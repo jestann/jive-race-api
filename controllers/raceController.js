@@ -10,7 +10,7 @@ const Result = require('./../models/result').model
 class RaceController {
     async index (req) {
         try {
-            // if (!authorizer.race.index(req.user)) { throw Err.notAuthorized }
+            if (!authorizer.race.index(req.user)) { throw Err.notAuthorized }
             let races = await Race.find({})
             if (!races) { throw Err.raceNotFound }
             return Say.success('races', races)
@@ -20,7 +20,7 @@ class RaceController {
 
     async create (req) {
         try {
-            // if (!authorizer.race.create(req.user)) { throw Err.notAuthorized }
+            if (!authorizer.race.create(req.user)) { throw Err.notAuthorized }
         
             // add required attributes -- add validation here, their checks for required data aren't as clean as mine
             if (!req.body.year || !req.body.name || !req.body.date) { throw Err.missingData }
@@ -53,7 +53,7 @@ class RaceController {
         try {
             let race = await Race.findById(req.params['id'])
             if (!race) { throw Err.raceNotFound }
-            // if (!authorizer.race.show(req.user, race)) { throw Err.notAuthorized }
+            if (!authorizer.race.show(req.user, race)) { throw Err.notAuthorized }
             
             return Say.success('race', race)
             
@@ -65,7 +65,7 @@ class RaceController {
             // authorize
             let race = await Race.findById(req.params['id'])
             if (!race) { throw Err.raceNotFound }
-            // if (!authorizer.race.update(req.user, race)) { throw Err.notAuthorized }
+            if (!authorizer.race.update(req.user, race)) { throw Err.notAuthorized }
             
             // update attributes -- add validation here
             for (let attribute in req.body) {
@@ -85,7 +85,7 @@ class RaceController {
             // authorize
             let race = await Race.findById(req.params['id'])
             if (!race) { throw Err.raceNotFound }
-            // if (!authorizer.race.destroy(req.user, race)) { throw Err.notAuthorized }
+            if (!authorizer.race.destroy(req.user, race)) { throw Err.notAuthorized }
             
             // only allow deletion of a race with all teams, runners, and results removed
             if (race.runners.length > 0 || race.teams.length > 0 || race.results.length > 0) { throw Err.stillContainsData }
@@ -102,7 +102,7 @@ class RaceController {
             // authorize
             let race = await Race.findById(req.params['id'])
             if (!race) { throw Err.raceNotFound }
-            // if (!authorizer.race.runners(req.user, race)) { throw Err.notAuthorized }
+            if (!authorizer.race.runners(req.user, race)) { throw Err.notAuthorized }
             
             // query and return
             let runners = []
@@ -121,7 +121,7 @@ class RaceController {
             // authorize
             let race = await Race.findById(req.params['id'])
             if (!race) { throw Err.raceNotFound }
-            // if (!authorizer.race.teams(req.user, race)) { throw Err.notAuthorized }
+            if (!authorizer.race.teams(req.user, race)) { throw Err.notAuthorized }
             
             // query and return
             let teams = []
@@ -140,7 +140,7 @@ class RaceController {
             // authorize
             let race = await Race.findById(req.params['id'])
             if (!race) { throw Err.raceNotFound }
-            // if (!authorizer.race.results(req.user, race)) { throw Err.notAuthorized }
+            if (!authorizer.race.results(req.user, race)) { throw Err.notAuthorized }
             
             // query and return success
             let results = []
@@ -159,9 +159,9 @@ class RaceController {
             // authorize
             let race = await Race.findById(req.params['id'])
             if (!race) { throw Err.raceNotFound }
-            // if (!authorizer.race.open(req.user, race)) { throw Err.notAuthorized }
+            if (!authorizer.race.open(req.user, race)) { throw Err.notAuthorized }
 
-            // open race and return
+            // open race and return (doesn't update runners to be current)
             race.open()
             await race.save()
             return Say.success('race', race, Say.opened)
@@ -174,16 +174,16 @@ class RaceController {
             // authorize
             let race = await Race.findById(req.params['id'])
             if (!race) { throw Err.raceNotFound }
-            // if (!authorizer.race.archive(req.user, race)) { throw Err.notAuthorized }
+            if (!authorizer.race.archive(req.user, race)) { throw Err.notAuthorized }
 
             // archive and save
             race.archive()
             await race.save()
 
-            // resets current team to null for all runners for whom this is their current race
+            // resets current team and isCurrent for all runners for whom this is their current race
             for (let i=0; i<race.runners.length; i++) {
                 let runner = await User.findById(race.runners[i])
-                if (runner.currentTeamId) { 
+                if (runner.isCurrentRace(race)) { 
                     runner.closeRace(race)
                     await runner.save()
                 }
@@ -199,7 +199,7 @@ class RaceController {
             // authorize
             let race = await Race.findById(req.params['id'])
             if (!race) { throw Err.raceNotFound }
-            // if (!authorizer.race.setCoordinator(req.user, race)) { throw Err.notAuthorized }
+            if (!authorizer.race.setCoordinator(req.user, race)) { throw Err.notAuthorized }
 
             // set coordinator
             if (!req.body.coordinatorId) { throw Err.missingData }
