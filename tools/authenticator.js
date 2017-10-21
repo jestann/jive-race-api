@@ -18,10 +18,14 @@ module.exports = async (req, res, next) => {
         next()
     } catch (error) { 
         // here I used to have this:
-        // return Err.make(error)
-        // but that's probably not correctly handled for middleware, so my next try was going to be this...
-        req.error = error
-        next()
+        // catch (error) { return Err.make(error) }
+        
+        // but I wasn't sure if a return was syntactically viable for middleware, so my next try was going to be this...
+        // catch (error) { 
+        //    req.error = error
+        //    next()\
+        // }
+        
         // and then in the next handler I would throw and catch and return the error
     }
 }

@@ -1,3 +1,3 @@
-### the not **SAD** race
+### race-back-end
 
-A web app built on [Express](http://expressjs.com/), [React](https://facebook.github.io/react/), and [Mongoose](http://mongoosejs.com/).
+Back end for a race app built on [Express](http://expressjs.com/) and [Mongoose](http://mongoosejs.com/).
