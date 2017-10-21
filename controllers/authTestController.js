@@ -10,8 +10,8 @@ const Result = require('./../models/result').model
 class authTestController {
     async getAuth (req) {
         try {
-            if (!req.userId) { throw Err.missingData }
-            let user = await User.findById(req.userId)
+            if (!req.body.userId) { throw Err.missingData }
+            let user = await User.findById(req.body.userId)
             if (!user) { throw Err.userNotFound }
 
             let model = req.params['model']
@@ -20,7 +20,7 @@ class authTestController {
             
             // index and create authorization
             if (action === 'index' || action === 'create' ) {
-                auth = authorizer[model][action](req.user)
+                auth = authorizer[model][action](user)
                 
             } 
             
@@ -31,23 +31,23 @@ class authTestController {
             
             // model instance-specific authorization
             else {
-                if (!req.modelId) { throw Err.missingData }
+                if (!req.body.modelId) { throw Err.missingData }
                 let modelInstance = null
                 switch (model) {
                     case 'user':
-                        modelInstance = await User.findById(req.modelId)
+                        modelInstance = await User.findById(req.body.modelId)
                         break
                     case 'race':
-                        modelInstance = await Race.findById(req.modelId)
+                        modelInstance = await Race.findById(req.body.modelId)
                         break
                     case 'team':
-                        modelInstance = await Team.findById(req.modelId)
+                        modelInstance = await Team.findById(req.body.modelId)
                         break
                     case 'result':
-                        modelInstance = await Result.findById(req.modelId)
+                        modelInstance = await Result.findById(req.body.modelId)
                 }
                 if (!modelInstance) { throw Err.itemNotFound } 
-                auth = authorizer[model][action](req.user, req.modelInstance)
+                auth = authorizer[model][action](user, modelInstance)
             }
             
             // return the authorization or attributes array

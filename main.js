@@ -19,18 +19,14 @@ mongoose.connect(config.database)
 
 // Set up routes.
 
-// unprotected routes
-app.get('/', function (request, response) {
-    response.send('Welcome.')
-})
-
-app.get('/about', function (request, response) {
-    response.send('About.')
-})
-
-// retrieve a token
+// register or login to retrieve a token
 const authRouter = require('./routes/authRouter')
 app.use('/auth', authRouter)
+
+// for authorizing presence of visual elements
+// how should this be authenticated?
+const authTestRouter = require('./routes/authTestRouter')
+app.use('/authtest', authTestRouter)
 
 // authentication middleware
 const authenticator = require('./tools/authenticator')
@@ -49,10 +45,6 @@ app.use('/teams', teamRouter)
 const resultRouter = require('./routes/resultRouter')
 app.use('/results', resultRouter)
 
-// for authorizing presence of visual elements
-// how should this be authenticated?
-const authTestRouter = require('./routes/authTestRouter')
-app.use('authtest', authTestRouter)
 
 
 // Set up server.
