@@ -1,4 +1,6 @@
 module.exports = {
+    loggedIn:       "Logged in successfully.",
+    loggedOut:      "Logged out successfully.",
     created:        "Created successfully.",
     saved:          "Saved successfully.",
     updated:        "Updated successfully.",

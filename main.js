@@ -30,11 +30,11 @@ app.get('/about', function (request, response) {
 
 // retrieve a token
 const authRouter = require('./routes/authRouter')
-app.use('/authenticate', authRouter)
+app.use('/auth', authRouter)
 
 // authentication middleware
-// const authenticator = require('./tools/authenticator')
-// app.use(authenticator)
+const authenticator = require('./tools/authenticator')
+app.use(authenticator)
 
 // protected routes
 const userRouter = require('./routes/userRouter')

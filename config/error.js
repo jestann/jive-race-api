@@ -20,6 +20,7 @@ module.exports = {
     cantOwn:            { code: 400, body: "User must join team first before being made owner." },
     runnerHasResult:    { code: 400, body: "Runner already has a result entered for this race." },
     authTestError:      { code: 400, body: "Couldn't retrieve that authorization information." },
+    underConstruction:  { code: 500, body: "This site element under construction." },
     defaultErr:         { code: 500, body: "Error." },
     make:               (error) => { return { success: false, code: error.code || 500, error: error.body || error.error || error } }
 }
