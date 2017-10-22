@@ -15,7 +15,7 @@ module.exports = async (req, res, next) => {
         if (!user) { throw Err.userNotFound }
         req.user = user
         
-        next()
+        return next()
     } catch (error) { 
         let data = Err.make(error)
         res.status(data.code).json(data)

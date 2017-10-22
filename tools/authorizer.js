@@ -23,9 +23,9 @@ const Authorizer = {
     },
          
     race: {
-        index: (user) =>                ( user.isMember() ),
+        index: (user) =>                ( user.isMember() ), // should sanitize race objects
         create: (user) =>               ( user.isAdmin() ),
-        show: (user, race) =>           ( user.isMember() ),
+        show: (user, race) =>           ( user.isMember() ), // should sanitize race objects
         update: (user, race) =>         ( user.isAdmin() ),
         destroy: (user, race) =>        ( user.isAdmin() ),
         runners: (user, race) =>        ( (user.isMember() && user.isRunningRace(race)) || user.isAdmin() ), // should sanitize runner objects 
@@ -39,9 +39,9 @@ const Authorizer = {
     },
     
     team: {
-        index: (user) =>                ( user.isMember() ),
+        index: (user) =>                ( user.isMember() ), // should sanitize team objects
         create: (user) =>               ( (user.isMember() && user.isCurrent) || user.isAdmin() ),
-        show: (user, team) =>           ( (user.isMember() && user.isCurrentRaceOfTeam(team)) || user.isAdmin() ),
+        show: (user, team) =>           ( (user.isMember() && user.isCurrentRaceOfTeam(team)) || user.isAdmin() ), // should sanitize team object
         update: (user, team) =>         ( (user.isMember() && user.owns(team)) || user.isAdmin() ),
         destroy: (user, team) =>        ( (user.isMember() && user.owns(team)) || user.isAdmin() ),
         members: (user, team) =>        ( (user.isMember() && user.isOnTeam(team)) || user.isAdmin() ), // should sanitize member objects
