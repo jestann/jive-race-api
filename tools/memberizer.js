@@ -29,9 +29,8 @@ class Memberizer {
     // join team -- won't allow a team owner to join a new team unless transfer ownership of old team
     async joinTeam (user, team) {
         try {
-            // check user is current -- redundant, adjust this later
-            let userIsCurrent = await registrar.userIsCurrent(user)
-            if (!userIsCurrent) { throw Err.notCurrent }
+            // redundant ?
+            if (!user.isCurrent) { throw Err.notCurrent }
             
             // check race is open
             let race = await Race.findById(team.raceId)
