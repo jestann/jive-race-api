@@ -30,6 +30,8 @@ class AuthController {
 
     async logIn (req) {
         try {
+            if (!req.body.username || !req.body.password) { throw Err.missingData }
+
             // log in the user and check
             let currentUser = await User.findOne({ username: req.body.username })
             if (!currentUser) { throw Err.userNotFound }
