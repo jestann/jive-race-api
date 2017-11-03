@@ -13,7 +13,7 @@ class RaceController {
             if (!authorizer.race.index(req.user)) { throw Err.notAuthorized }
             let races = await Race.find({})
             if (!races) { throw Err.raceNotFound }
-            return Say.success('races', races)
+            return Say.success(req.user, 'races', races)
             
         } catch (error) { return Err.make(error) }
     }
@@ -44,7 +44,7 @@ class RaceController {
             }
 
             await newRace.save() 
-            return Say.success('race', newRace, Say.created)
+            return Say.success(req.user, 'race', newRace, Say.created)
             
         } catch (error) { return Err.make(error) }
     }
@@ -55,7 +55,7 @@ class RaceController {
             if (!race) { throw Err.raceNotFound }
             if (!authorizer.race.show(req.user, race)) { throw Err.notAuthorized }
             
-            return Say.success('race', race)
+            return Say.success(req.user, 'race', race)
             
         } catch (error) { return Err.make(error) }
     }
@@ -75,7 +75,7 @@ class RaceController {
             }
 
             await race.save()
-            return Say.success('race', race, Say.updated)
+            return Say.success(req.user, 'race', race, Say.updated)
             
         } catch (error) { return Err.make(error) }
     }
@@ -92,7 +92,7 @@ class RaceController {
 
             // delete and return success
             await race.remove()
-            return Say.success(Say.destroyed)
+            return Say.success(req.user, Say.destroyed)
             
         } catch (error) { return Err.make(error) }
     }
@@ -111,7 +111,7 @@ class RaceController {
                 if (runner) { runners.push(runner) }
                 else { runners.push(Err.userNotFound) }
             }
-            return Say.success('runners', runners)
+            return Say.success(req.user, 'runners', runners)
 
         } catch (error) { return Err.make(error) }
     }
@@ -130,7 +130,7 @@ class RaceController {
                 if (team) { teams.push(team) }
                 else { teams.push(Err.teamNotFound) }
             }
-            return Say.success('teams', teams)
+            return Say.success(req.user, 'teams', teams)
 
         } catch (error) { return Err.make(error) }
     }
@@ -149,7 +149,7 @@ class RaceController {
                 if (result) { results.push(result) }
                 else { results.push(Err.itemNotFound) }
             }
-            return Say.success('results', results)
+            return Say.success(req.user, 'results', results)
 
         } catch (error) { return Err.make(error) }
     }
@@ -164,7 +164,7 @@ class RaceController {
             // open race and return (doesn't update runners to be current)
             race.open()
             await race.save()
-            return Say.success('race', race, Say.opened)
+            return Say.success(req.user, 'race', race, Say.opened)
 
         } catch (error) { return Err.make(error) }
     }
@@ -189,7 +189,7 @@ class RaceController {
                 }
             }
 
-            return Say.success('race', race, Say.archived)
+            return Say.success(req.user, 'race', race, Say.archived)
 
         } catch (error) { return Err.make(error) }
     }
@@ -210,7 +210,7 @@ class RaceController {
 
             // save updates
             await race.save()
-            return Say.success('race', race, Say.updated)
+            return Say.success(req.user, 'race', race, Say.updated)
 
         } catch (error) { return Err.make(error) }
     }

@@ -12,7 +12,7 @@ class ResultController {
         try {
             if (!authorizer.result.index(req.user)) { throw Err.notAuthorized }
             let results = await Result.find({})
-            return Say.success('results', results)
+            return Say.success(req.user, 'results', results)
             
         } catch (error) { return Err.make(error) }
     }
@@ -55,7 +55,7 @@ class ResultController {
             await race.save()
             await team.save()
             await runner.save()
-            return Say.success('result', newResult, Say.created)
+            return Say.success(req.user, 'result', newResult, Say.created)
             
         } catch (error) { return Err.make(error) }
     }
@@ -65,7 +65,7 @@ class ResultController {
             let result = await Result.findById(req.params['id'])
             if (!result) { throw Err.itemNotFound }
             if (!authorizer.result.show(req.user, result)) { throw Err.notAuthorized }
-            return Say.success('result', result)
+            return Say.success(req.user, 'result', result)
             
         } catch (error) { return Err.make(error) }
     }
@@ -87,7 +87,7 @@ class ResultController {
             }
 
             await result.save()
-            return Say.success('result', result, Say.updated)
+            return Say.success(req.user, 'result', result, Say.updated)
             
         } catch (error) { return Err.make(error) }
     }
@@ -117,7 +117,7 @@ class ResultController {
             await runner.save()
 
             await result.remove()
-            return Say.success(Say.destroyed)
+            return Say.success(req.user, Say.destroyed)
             
         } catch (error) { return Err.make(error) }
     }

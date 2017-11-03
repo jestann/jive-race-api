@@ -52,7 +52,7 @@ class authTestController {
             
             // return the authorization or attributes array
             if (!auth) { throw Err.authTestError }
-            return Say.success('auth', auth)
+            return Say.success("No user", 'auth', auth)
             
         } catch (error) { return Err.make(error) }
     }

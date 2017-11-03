@@ -23,7 +23,7 @@ class AuthController {
             let token = await jwt.sign({ id: newUser._id.toString() }, config.secret, { expiresIn: '1h' })
             if (!token) { throw Err.authError }
             
-            return Say.success('token', token, Say.registered)
+            return Say.success(newUser, 'token', token, Say.registered)
             
         } catch (error) { return Err.make(error) }
     }
@@ -43,7 +43,7 @@ class AuthController {
             let token = await jwt.sign({ id: currentUser._id.toString() }, config.secret, { expiresIn: '1h' })
             if (!token) { throw Err.authError }
             
-            return Say.success('token', token, Say.loggedIn)
+            return Say.success(currentUser, 'token', token, Say.loggedIn)
             
         } catch (error) { return Err.make(error) }
     }
@@ -55,7 +55,7 @@ class AuthController {
             // token.expire()
             
             throw Err.underConstruction // this route not yet working
-            return Say.success(Say.loggedOut)
+            return Say.success("No current user", Say.loggedOut)
             
         } catch (error) { return Err.make(error) }
     }

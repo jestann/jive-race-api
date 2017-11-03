@@ -20,7 +20,7 @@ class UserController {
             if (!authorizer.user.index(req.user)) { throw Err.notAuthorized }
             let users = await User.find({})
             if (!users) { throw Err.userNotFound }
-            return Say.success('users', users)
+            return Say.success(req.user, 'users', users)
     
         } catch (error) { return Err.make(error) }
     }
@@ -42,7 +42,7 @@ class UserController {
             })
 
             await newUser.save() 
-            return Say.success('user', newUser, Say.created)
+            return Say.success(req.user, 'user', newUser, Say.created)
             
         } catch (error) { return Err.make(error) }
     }
@@ -55,7 +55,7 @@ class UserController {
             if (!authorizer.user.show(req.user, userInstance)) { throw Err.notAuthorized }
             
             // return instance
-            return Say.success('user', userInstance)
+            return Say.success(req.user, 'user', userInstance)
             
         } catch (error) { return Err.make(error) }
     }
@@ -84,7 +84,7 @@ class UserController {
             }
 
             await userInstance.save()
-            return Say.success('user', userInstance, Say.updated)
+            return Say.success(req.user, 'user', userInstance, Say.updated)
             
         } catch (error) { return Err.make(error) }
     }
@@ -102,7 +102,7 @@ class UserController {
 
             if (inactivated.currentTeam) { await inactivated.currentTeam.save() }
             await userInstance.save()
-            return Say.success(Say.destroyed)
+            return Say.success(req.user, Say.destroyed)
 
         } catch (error) { return Err.make(error) }
     }
@@ -121,7 +121,7 @@ class UserController {
                 if (race) { races.push(race) }
                 else { races.push(Err.raceNotFound) }
             }
-            return Say.success('races', races)
+            return Say.success(req.user, 'races', races)
 
         } catch (error) { return Err.make(error) }
     }
@@ -140,7 +140,7 @@ class UserController {
                 if (team) { teams.push(team) }
                 else { teams.push(Err.teamNotFound) }
             }
-            return Say.success('teams', teams)
+            return Say.success(req.user, 'teams', teams)
 
         } catch (error) { return Err.make(error) }
     }
@@ -159,7 +159,7 @@ class UserController {
                 if (result) { results.push(result) }
                 else { results.push(Err.itemNotFound) }
             }
-            return Say.success('results', results)
+            return Say.success(req.user, 'results', results)
 
         } catch (error) { return Err.make(error) }
     }
@@ -183,7 +183,7 @@ class UserController {
             
             await race.save()
             await userInstance.save()
-            return Say.success('[user, race]', [userInstance, race], Say.registered)
+            return Say.success(req.user, '[user, race]', [userInstance, race], Say.registered)
 
         } catch (error) { return Err.make(error) }
     }
@@ -203,7 +203,7 @@ class UserController {
             
             await race.save()
             await userInstance.save()
-            return Say.success('[user, race]', [userInstance, race], Say.unregistered)
+            return Say.success(req.user, '[user, race]', [userInstance, race], Say.unregistered)
 
         } catch (error) { return Err.make(error) }
     }
@@ -223,7 +223,7 @@ class UserController {
             
             await team.save()
             await userInstance.save()
-            return Say.success('[user, team]', [userInstance, team], Say.joined)
+            return Say.success(req.user, '[user, team]', [userInstance, team], Say.joined)
 
         } catch (error) { return Err.make(error) }
     }
@@ -243,7 +243,7 @@ class UserController {
 
             await team.save()
             await userInstance.save()
-            return Say.success('[user, team]', [userInstance, team], Say.leftTeam)
+            return Say.success(req.user, '[user, team]', [userInstance, team], Say.leftTeam)
 
         } catch (error) { return Err.make(error) }
     }
@@ -256,7 +256,7 @@ class UserController {
             
             userInstance.makeAdmin()
             await userInstance.save()
-            return Say.success('user', userInstance, Say.updated)
+            return Say.success(req.user, 'user', userInstance, Say.updated)
             
         } catch (error) { return Err.make(error) }
     }
@@ -269,7 +269,7 @@ class UserController {
             
             userInstance.makeMember()
             await userInstance.save()
-            return Say.success('user', userInstance, Say.updated)
+            return Say.success(req.user, 'user', userInstance, Say.updated)
             
         } catch (error) { return Err.make(error) }
     }

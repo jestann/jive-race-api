@@ -18,7 +18,7 @@ class TeamController {
             let teams = await Team.find({})
             if (!teams) { throw Err.teamNotFound }
             
-            return Say.success('teams', teams)
+            return Say.success(req.user, 'teams', teams)
             
         } catch (error) { return Err.make(error) }
     }
@@ -54,7 +54,7 @@ class TeamController {
             await race.save()
             await owner.save()
             await newTeam.save() 
-            return Say.success('team', newTeam, Say.created)
+            return Say.success(req.user, 'team', newTeam, Say.created)
             
         } catch (error) { return Err.make(error) }
     }
@@ -66,7 +66,7 @@ class TeamController {
             if (!team) { throw Err.teamNotFound }
             if (!authorizer.team.show(req.user, team)) { throw Err.notAuthorized }
             
-            return Say.success('team', team)
+            return Say.success(req.user, 'team', team)
             
         } catch (error) { return Err.make(error) }
     }
@@ -88,7 +88,7 @@ class TeamController {
             // to change a team's owner use transfer ownership
             
             await team.save()
-            return Say.success('team', team, Say.updated)
+            return Say.success(req.user, 'team', team, Say.updated)
             
         } catch (error) { return Err.make(error) }
     }
@@ -110,7 +110,7 @@ class TeamController {
             
             await race.save()
             await team.remove()
-            return Say.success(Say.destroyed)
+            return Say.success(req.user, Say.destroyed)
             
         } catch (error) { return Err.make(error) }
     }
@@ -129,7 +129,7 @@ class TeamController {
                 if (member) { members.push(member) }
                 else { members.push(Err.userNotFound) }
             }
-            return Say.success('members', members)
+            return Say.success(req.user, 'members', members)
 
         } catch (error) { return Err.make(error) }
     }
@@ -148,7 +148,7 @@ class TeamController {
                 if (result) { results.push(result) }
                 else { results.push(Err.itemNotFound) }
             }
-            return Say.success('results', results)
+            return Say.success(req.user, 'results', results)
 
         } catch (error) { return Err.make(error) }
     }
@@ -171,7 +171,7 @@ class TeamController {
             
             await team.save()
             await newOwner.save()
-            return Say.success('[owner, team]', [newOwner, team], Say.transferred)
+            return Say.success(req.user, '[owner, team]', [newOwner, team], Say.transferred)
             
         } catch (error) { return Err.make(error) }
     }
