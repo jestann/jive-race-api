@@ -183,6 +183,7 @@ class RaceController {
             // resets current team and isCurrent for all runners for whom this is their current race
             for (let i=0; i<race.runners.length; i++) {
                 let runner = await User.findById(race.runners[i])
+                if (!runner) { throw Err.userNotFound }
                 if (runner.isCurrentRace(race)) { 
                     runner.closeRace(race)
                     await runner.save()

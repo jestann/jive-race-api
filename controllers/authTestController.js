@@ -21,7 +21,6 @@ class authTestController {
             // index and create authorization
             if (action === 'index' || action === 'create' ) {
                 auth = authorizer[model][action](user)
-                
             } 
             
             // getting arrays of required or valid attributes
@@ -52,7 +51,7 @@ class authTestController {
             
             // return the authorization or attributes array
             if (!auth) { throw Err.authTestError }
-            return Say.success("No user", 'auth', auth)
+            return Say.success(undefined, 'auth', auth)
             
         } catch (error) { return Err.make(error) }
     }

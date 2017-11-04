@@ -15,8 +15,9 @@ module.exports = {
     opened:         "Race opened for registration.",
     archived:       "Race closed for registration and current team reset for all its runners.",
     inactivated:    "User inactivated successfully.",
-    success:        (currentUser, dataName=null, data=null, message=null) => { 
-        let result = { success: true, code: 200, currentUser: currentUser }
+    success:        (currentUser=null, dataName=null, data=null, message=null) => { 
+        let result = { success: true, code: 200 }
+        if (currentUser) { result.currentUser = currentUser }
         if (dataName && data) { result[dataName] = data }
         if (dataName && data && message) { result.message = message }
         if (dataName && !data && !message) { result.message = dataName }

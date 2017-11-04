@@ -174,6 +174,7 @@ class UserController {
             // payment will be taken care of prior to this step
             // it will be handled through a separate payment controller before this route is called
             
+            if (!req.body.raceId) { throw Err.missingData }
             let race = await Race.findById(req.body.raceId)
             if (!race) { throw Err.raceNotFound }
             
@@ -195,6 +196,7 @@ class UserController {
             if (!userInstance) { throw Err.userNotFound }
             if (!authorizer.user.unregister(req.user, userInstance)) { throw Err.notAuthorized }
 
+            if (!req.body.raceId) { throw Err.missingData }
             let race = await Race.findById(req.body.raceId)
             if (!race) { throw Err.raceNotFound }
             
@@ -215,6 +217,7 @@ class UserController {
             if (!userInstance) { throw Err.userNotFound }
             if (!authorizer.user.joinTeam(req.user, userInstance)) { throw Err.notAuthorized }
 
+            if (!req.body.teamId) { throw Err.missingData }
             let team = await Team.findById(req.body.teamId)
             if (!team) { throw Err.teamNotFound }
             
@@ -235,6 +238,7 @@ class UserController {
             if (!userInstance) { throw Err.userNotFound }
             if (!authorizer.user.leaveTeam(req.user, userInstance)) { throw Err.notAuthorized }
 
+            if (!req.body.teamId) { throw Err.missingData }
             let team = await Team.findById(req.body.teamId)
             if (!team) { throw Err.teamNotFound }
             
