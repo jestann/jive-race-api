@@ -17,11 +17,12 @@ const Result = require('./../models/result').model
 class UserController {
     async index (req) {
         try {
+            // if (!req.user) { throw Err.noCurrentUser } -- if no middleware
             if (!authorizer.user.index(req.user)) { throw Err.notAuthorized }
             let users = await User.find({})
+            
             if (!users) { throw Err.userNotFound }
             return Say.success(req.user, 'users', users)
-    
         } catch (error) { return Err.make(error) }
     }
 
