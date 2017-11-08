@@ -19,8 +19,16 @@ mongoose.connect(config.database)
 
 // Set up routes.
 
+// non-cors for development
+app.use('/', async (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*")
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+  return next()
+})
+
+
 // unprotected routes
-app.get('/home', async (req, res) => { res.send('Test.') })
+app.get('/test', async (req, res) => { res.send('Test.') })
 
 // register or login to retrieve a token
 const authRouter = require('./routes/authRouter')
@@ -30,6 +38,7 @@ app.use('/auth', authRouter)
 // how should this be authenticated?
 const authTestRouter = require('./routes/authTestRouter')
 app.use('/authtest', authTestRouter)
+
 
 // authentication middleware
 const authenticator = require('./tools/authenticator')
