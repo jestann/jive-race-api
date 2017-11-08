@@ -17,15 +17,45 @@ const mongoose = require('mongoose')
 mongoose.connect(config.database)
 
 
-// Set up routes.
+// Set up middleware for development.
 
-// non-cors for development
+// for dealing with cors
 app.use('/', async (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*")
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  // res.header('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
+  res.header('Access-Control-Max-Age', 1728000)
   return next()
 })
 
+// for dealing with preflight options requests
+const proxy = require('http-proxy-middleware')
+let options = {
+  target: 'http://race-front-end-jessann.c9users.io/',
+  changeOrigin: true,
+  ws: true,
+  /*
+  pathRewrite: {
+    '^/api/old-path' : '/api/new-path', // rewrite path
+    '^/api/remove/path' : '/path'       // remove base path
+  },
+  router: {
+    // when request.headers.host == 'dev.localhost:3000',
+    // override target 'http://www.example.org' to 'http://localhost:8000'
+    'dev.localhost:3000' : 'http://localhost:8000'
+  },
+  */
+  logLevel: 'debug',
+  onError: function onError(err, req, res) {
+  console.log('Something went wrong with the proxy middleware.', err)
+  res.end()
+  }
+}
+app.use('/', proxy(options))
+
+
+// Set up routes.
 
 // unprotected routes
 app.get('/test', async (req, res) => { res.send('Test.') })
