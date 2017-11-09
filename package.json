@@ -19,13 +19,11 @@
   "dependencies": {
     "bcrypt": "^1.0.3",
     "body-parser": "^1.18.0",
+    "cors": "^2.8.4",
     "express": "^4.15.4",
     "jsonwebtoken": "^8.0.0",
     "mongoose": "^4.11.11",
     "morgan": "^1.8.2",
     "validator": "^8.2.0"
-  },
-  "devDependencies": {
-    "http-proxy-middleware": "^0.17.4"
   }
 }
