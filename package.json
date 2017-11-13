@@ -2,6 +2,9 @@
   "name": "workspace",
   "version": "1.0.0",
   "description": "Race app back end built on Express and Mongoose",
+  "engines": {
+    "node": "8.7.0"
+  }
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -14,7 +17,7 @@
   "author": "jestann",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/jestann/not-sad-race/issues"
+    "url": "https://github.com/jestann/race-back-end/issues"
   },
   "homepage": "https://github.com/jestann/not-sad-race#readme",
   "dependencies": {
