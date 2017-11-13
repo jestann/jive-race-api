@@ -1,5 +1,5 @@
-# config data
-config/config.js
+# config data -- for pushing to heroku, put it in heroku environment variables
+# config/config.js
 
 # database
 data/
