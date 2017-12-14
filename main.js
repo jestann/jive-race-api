@@ -36,7 +36,7 @@ app.use('/', async (req, res, next) => {
 // Set up routes.
 
 // unprotected routes
-app.get('/test', async (req, res) => { res.send('Test.') })
+app.get('/', async (req, res) => { res.send('Welcome to the Jive Race API.') })
 
 // register or login to retrieve a token
 const authRouter = require('./routes/authRouter')
