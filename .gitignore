@@ -2,6 +2,7 @@
 # config/config.js
 
 # database
+mongod
 data/
 
 # Logs
