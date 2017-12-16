@@ -1,5 +1,6 @@
-// Set up dependencies.
+/* Main Server File */
 
+// Set up dependencies.
 const app = require('express')()
 const config = require('./config/config')
 
@@ -10,30 +11,17 @@ app.use(bodyParser.json())
 const morgan = require('morgan')
 app.use(morgan('dev'))
 
-
 // Set up database.
-
 const mongoose = require('mongoose')
 mongoose.connect(config.database)
 
-
 // Set up middleware for dealing with cors.
-
 const cors = require('cors')
 app.use(cors())
 
-/*
-app.use('/', async (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
-  res.header('Access-Control-Max-Age', 1728000)
-  return next()
-})
-*/
 
 
-// Set up routes.
+/* Set up Routes */
 
 // unprotected routes
 app.get('/', async (req, res) => { res.send('Welcome to the Jive Race API.') })
@@ -46,7 +34,6 @@ app.use('/auth', authRouter)
 // how should this be authenticated?
 const authTestRouter = require('./routes/authTestRouter')
 app.use('/authtest', authTestRouter)
-
 
 // authentication middleware
 const authenticator = require('./tools/authenticator')
@@ -66,7 +53,8 @@ const resultRouter = require('./routes/resultRouter')
 app.use('/api/results', resultRouter)
 
 
-// Set up server.
+
+/* Set up Server */
 
 app.listen(process.env.PORT, function () {
   console.log('Listening on port ', process.env.PORT, '....')
