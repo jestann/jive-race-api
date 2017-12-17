@@ -1,7 +1,8 @@
 {
-  "name": "workspace",
+  "name": "jive-race-api",
+  "author": "jestann",
   "version": "1.0.0",
-  "description": "Race app back end built on Express and Mongoose",
+  "description": "Team-building race API built on Express and Mongoose",
   "engines": {
     "node": "8.7.0",
     "npm": "5.4.2"
@@ -13,9 +14,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jestann/race-back-end.git"
+    "url": "git+https://github.com/jestann/jive-race-api.git"
   },
-  "author": "jestann",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/jestann/race-back-end/issues"
