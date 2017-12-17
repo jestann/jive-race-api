@@ -17,10 +17,6 @@
     "url": "git+https://github.com/jestann/jive-race-api.git"
   },
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/jestann/race-back-end/issues"
-  },
-  "homepage": "https://github.com/jestann/not-sad-race#readme",
   "dependencies": {
     "bcrypt": "^1.0.3",
     "body-parser": "^1.18.0",
